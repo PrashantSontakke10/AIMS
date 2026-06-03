@@ -1,31 +1,23 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const CourseSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: [true, 'Course title is required'],
-    trim: true
+const courseSchema = new mongoose.Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+    },
+    code: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
   },
-  description: {
-    type: String,
-    required: [true, 'Course description is required']
-  },
-  thumbnailUrl: {
-    type: String,
-    default: ''
-  },
-  subject: {
-    type: String,
-    required: [true, 'Subject category is required'],
-    trim: true
-  },
-  isActive: {
-    type: Boolean,
-    default: true
+  {
+    timestamps: true,
   }
-}, { 
-  timestamps: true 
-});
+);
 
-const Course = mongoose.model('Course', CourseSchema);
-export default Course;
+export default mongoose.model("Course", courseSchema);

@@ -1,23 +1,11 @@
-import express from 'express';
-import { 
-  createCourse, 
-  getAllCourses, 
-  getCourseById, 
-  updateCourse, 
-  deleteCourse 
-} from './course.controller.js';
+import { Router } from "express";
+import { createCourse, getCourses } from "./course.controller.js";
+import { protect } from "../../middleware/auth.middleware.js";
 
-const router = express.Router();
+const router = Router();
 
-// Group routes sharing the root path '/'
-router.route('/')
-  .post(createCourse)
-  .get(getAllCourses);
-
-// Group routes sharing '/:id'
-router.route('/:id')
-  .get(getCourseById)
-  .patch(updateCourse)
-  .delete(deleteCourse);
+// Routes for courses management
+router.post("/", protect, createCourse);
+router.get("/", protect, getCourses);
 
 export default router;

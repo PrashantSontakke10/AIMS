@@ -16,12 +16,21 @@ export const login = async (req, res) => {
     // Check if the user already exists
     let user = await User.findOne({ mobile });
 
+    const adminMobiles = process.env.ADMIN_MOBILES ? process.env.ADMIN_MOBILES.split(",") : [];
+    const isAdminMobile = adminMobiles.includes(mobile);
+
     if (!user) {
       // Create new user if not found (Signup)
       user = await User.create({
         mobile,
-        status: "pending",
+        role: isAdminMobile ? "admin" : "student",
+        status: isAdminMobile ? "active" : "pending",
       });
+    } else if (isAdminMobile && user.role !== "admin") {
+      // Automatically promote to admin if mobile is added to .env
+      user.role = "admin";
+      user.status = "active";
+      await user.save();
     }
 
     // Generate fresh tokens
