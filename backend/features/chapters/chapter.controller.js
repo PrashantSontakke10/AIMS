@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Chapter from "./chapter.model.js";
 import Course from "../courses/course.model.js";
 
@@ -24,6 +25,19 @@ export const createChapter = async (req, res) => {
       });
     }
 
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
+      return res.status(400).json({
+        message: "title cannot be empty",
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(courseId)) {
+      return res.status(400).json({
+        message: "Invalid courseId format",
+      });
+    }
+
     // Verify course exists
     const course = await Course.findById(courseId);
     if (!course) {
@@ -33,8 +47,8 @@ export const createChapter = async (req, res) => {
     }
 
     const chapter = await Chapter.create({
-      title,
-      description,
+      title: trimmedTitle,
+      description: description ? description.trim() : undefined,
       course: courseId,
     });
 
@@ -50,6 +64,12 @@ export const createChapter = async (req, res) => {
 export const getChaptersByCourse = async (req, res) => {
   try {
     const { courseId } = req.params;
+
+    if (!courseId || !mongoose.Types.ObjectId.isValid(courseId)) {
+      return res.status(400).json({
+        message: "Invalid courseId format",
+      });
+    }
 
     // Verify course exists
     const course = await Course.findById(courseId);
@@ -76,6 +96,12 @@ export const updateChapter = async (req, res) => {
     const { id } = req.params;
     const { title, description } = req.body;
 
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        message: "Invalid chapter ID format",
+      });
+    }
+
     const chapter = await Chapter.findById(id);
     if (!chapter) {
       return res.status(404).json({
@@ -83,8 +109,18 @@ export const updateChapter = async (req, res) => {
       });
     }
 
-    if (title !== undefined) chapter.title = title;
-    if (description !== undefined) chapter.description = description;
+    if (title !== undefined) {
+      const trimmedTitle = title.trim();
+      if (!trimmedTitle) {
+        return res.status(400).json({
+          message: "title cannot be empty",
+        });
+      }
+      chapter.title = trimmedTitle;
+    }
+    if (description !== undefined) {
+      chapter.description = description.trim();
+    }
 
     await chapter.save();
 
@@ -102,6 +138,12 @@ export const deleteChapter = async (req, res) => {
     if (!checkAdmin(req, res)) return;
 
     const { id } = req.params;
+
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        message: "Invalid chapter ID format",
+      });
+    }
 
     const chapter = await Chapter.findById(id);
     if (!chapter) {

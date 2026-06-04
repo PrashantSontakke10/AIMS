@@ -8,6 +8,7 @@ import adminRoutes from "../features/admin/admin.routes.js";
 import courseRoutes from "../features/courses/course.routes.js";
 import chapterRoutes from "../features/chapters/chapter.routes.js";
 import lectureRoutes from "../features/lectures/lecture.routes.js";
+import noteRoutes from "../features/notes/note.routes.js";
 
 const app = express();
 app.use(cors());
@@ -25,6 +26,7 @@ app.use("/api/admin", adminRoutes);
 app.use('/courses', courseRoutes);
 app.use('/chapters', chapterRoutes);
 app.use('/lectures', lectureRoutes);
+app.use('/notes', noteRoutes);
 
 app.get("/", (req, res) => {
     res.send("Hello World!");

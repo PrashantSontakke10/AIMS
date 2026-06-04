@@ -1,7 +1,14 @@
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 import User from "./auth.model.js";
 
 import { generateAccessToken, generateRefreshToken} from "../../utils/generateTokens.js";
+
+// Helper function to validate mobile format (10-15 digits, optional leading +)
+const validateMobile = (mobile) => {
+  const mobileRegex = /^\+?[0-9]{10,15}$/;
+  return mobileRegex.test(mobile);
+};
 
 export const login = async (req, res) => {
   try {
@@ -13,24 +20,40 @@ export const login = async (req, res) => {
       });
     }
 
+    const cleanedMobile = mobile.trim();
+    if (!validateMobile(cleanedMobile)) {
+      return res.status(400).json({
+        message: "Invalid mobile number format. Must be 10-15 digits, optionally starting with '+'",
+      });
+    }
+
     // Check if the user already exists
-    let user = await User.findOne({ mobile });
+    let user = await User.findOne({ mobile: cleanedMobile });
 
     const adminMobiles = process.env.ADMIN_MOBILES ? process.env.ADMIN_MOBILES.split(",") : [];
-    const isAdminMobile = adminMobiles.includes(mobile);
+    const isAdminMobile = adminMobiles.includes(cleanedMobile);
 
     if (!user) {
       // Create new user if not found (Signup)
       user = await User.create({
-        mobile,
+        mobile: cleanedMobile,
         role: isAdminMobile ? "admin" : "student",
         status: isAdminMobile ? "active" : "pending",
       });
-    } else if (isAdminMobile && user.role !== "admin") {
-      // Automatically promote to admin if mobile is added to .env
-      user.role = "admin";
-      user.status = "active";
-      await user.save();
+    } else {
+      // Check if user is blocked
+      if (user.status === "blocked") {
+        return res.status(403).json({
+          message: "Access denied. Your account is blocked. Please contact the administrator.",
+        });
+      }
+
+      if (isAdminMobile && user.role !== "admin") {
+        // Automatically promote to admin if mobile is added to .env
+        user.role = "admin";
+        user.status = "active";
+        await user.save();
+      }
     }
 
     // Generate fresh tokens
@@ -89,6 +112,13 @@ export const refreshAccessToken = async (
       });
     }
 
+    // Check if user is blocked
+    if (user.status === "blocked") {
+      return res.status(403).json({
+        message: "Access denied. Your account is blocked.",
+      });
+    }
+
     if (
       user.refreshToken !== refreshToken
     ) {
@@ -112,14 +142,25 @@ export const refreshAccessToken = async (
 
 
 export const logout = async (req, res) => {
-    
-  const { userId } = req.body;
+  try {
+    const { userId } = req.body;
 
-  await User.findByIdAndUpdate(userId, {
-    refreshToken: null,
-  });
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({
+        message: "A valid userId is required",
+      });
+    }
 
-  res.json({
-    message: "Logged out",
-  });
+    await User.findByIdAndUpdate(userId, {
+      refreshToken: null,
+    });
+
+    res.json({
+      message: "Logged out",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
 };
