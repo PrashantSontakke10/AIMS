@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Lecture from "./lecture.model.js";
 import Chapter from "../chapters/chapter.model.js";
 
@@ -24,6 +25,26 @@ export const createLecture = async (req, res) => {
       });
     }
 
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
+      return res.status(400).json({
+        message: "title cannot be empty",
+      });
+    }
+
+    const trimmedVideoUrl = videoUrl.trim();
+    if (!trimmedVideoUrl) {
+      return res.status(400).json({
+        message: "videoUrl cannot be empty",
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(chapterId)) {
+      return res.status(400).json({
+        message: "Invalid chapterId format",
+      });
+    }
+
     // Verify chapter exists
     const chapter = await Chapter.findById(chapterId);
     if (!chapter) {
@@ -33,9 +54,9 @@ export const createLecture = async (req, res) => {
     }
 
     const lecture = await Lecture.create({
-      title,
-      description,
-      videoUrl,
+      title: trimmedTitle,
+      description: description ? description.trim() : undefined,
+      videoUrl: trimmedVideoUrl,
       chapter: chapterId,
     });
 
@@ -51,6 +72,12 @@ export const createLecture = async (req, res) => {
 export const getLecturesByChapter = async (req, res) => {
   try {
     const { chapterId } = req.params;
+
+    if (!chapterId || !mongoose.Types.ObjectId.isValid(chapterId)) {
+      return res.status(400).json({
+        message: "Invalid chapterId format",
+      });
+    }
 
     // Verify chapter exists
     const chapter = await Chapter.findById(chapterId);
@@ -77,6 +104,12 @@ export const updateLecture = async (req, res) => {
     const { id } = req.params;
     const { title, description, videoUrl } = req.body;
 
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        message: "Invalid lecture ID format",
+      });
+    }
+
     const lecture = await Lecture.findById(id);
     if (!lecture) {
       return res.status(404).json({
@@ -84,9 +117,27 @@ export const updateLecture = async (req, res) => {
       });
     }
 
-    if (title !== undefined) lecture.title = title;
-    if (description !== undefined) lecture.description = description;
-    if (videoUrl !== undefined) lecture.videoUrl = videoUrl;
+    if (title !== undefined) {
+      const trimmedTitle = title.trim();
+      if (!trimmedTitle) {
+        return res.status(400).json({
+          message: "title cannot be empty",
+        });
+      }
+      lecture.title = trimmedTitle;
+    }
+    if (description !== undefined) {
+      lecture.description = description.trim();
+    }
+    if (videoUrl !== undefined) {
+      const trimmedVideoUrl = videoUrl.trim();
+      if (!trimmedVideoUrl) {
+        return res.status(400).json({
+          message: "videoUrl cannot be empty",
+        });
+      }
+      lecture.videoUrl = trimmedVideoUrl;
+    }
 
     await lecture.save();
 
@@ -104,6 +155,12 @@ export const deleteLecture = async (req, res) => {
     if (!checkAdmin(req, res)) return;
 
     const { id } = req.params;
+
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        message: "Invalid lecture ID format",
+      });
+    }
 
     const lecture = await Lecture.findById(id);
     if (!lecture) {

@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import User from "../auth/auth.model.js";
 import Course from "../courses/course.model.js";
 
@@ -38,9 +39,9 @@ export const approveStudent = async (req, res) => {
     if (!checkAdmin(req, res)) return;
 
     const { userId } = req.body;
-    if (!userId) {
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({
-        message: "userId is required",
+        message: "A valid userId is required",
       });
     }
 
@@ -48,6 +49,12 @@ export const approveStudent = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         message: "User not found",
+      });
+    }
+
+    if (user.role !== "student") {
+      return res.status(400).json({
+        message: "Only student accounts can be approved",
       });
     }
 
@@ -77,9 +84,9 @@ export const blockStudent = async (req, res) => {
     if (!checkAdmin(req, res)) return;
 
     const { userId } = req.body;
-    if (!userId) {
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({
-        message: "userId is required",
+        message: "A valid userId is required",
       });
     }
 
@@ -87,6 +94,12 @@ export const blockStudent = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         message: "User not found",
+      });
+    }
+
+    if (user.role !== "student") {
+      return res.status(400).json({
+        message: "Only student accounts can be blocked",
       });
     }
 
@@ -117,9 +130,14 @@ export const assignCourse = async (req, res) => {
     if (!checkAdmin(req, res)) return;
 
     const { userId, courseId } = req.body;
-    if (!userId || !courseId) {
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({
-        message: "userId and courseId are required",
+        message: "A valid userId is required",
+      });
+    }
+    if (!courseId || !mongoose.Types.ObjectId.isValid(courseId)) {
+      return res.status(400).json({
+        message: "A valid courseId is required",
       });
     }
 
@@ -127,6 +145,12 @@ export const assignCourse = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         message: "User not found",
+      });
+    }
+
+    if (user.role !== "student") {
+      return res.status(400).json({
+        message: "Courses can only be assigned to students",
       });
     }
 
@@ -173,9 +197,14 @@ export const removeCourse = async (req, res) => {
     if (!checkAdmin(req, res)) return;
 
     const { userId, courseId } = req.body;
-    if (!userId || !courseId) {
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({
-        message: "userId and courseId are required",
+        message: "A valid userId is required",
+      });
+    }
+    if (!courseId || !mongoose.Types.ObjectId.isValid(courseId)) {
+      return res.status(400).json({
+        message: "A valid courseId is required",
       });
     }
 
@@ -183,6 +212,12 @@ export const removeCourse = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         message: "User not found",
+      });
+    }
+
+    if (user.role !== "student") {
+      return res.status(400).json({
+        message: "Courses can only be removed from students",
       });
     }
 
@@ -216,10 +251,24 @@ export const assignCoursesAndApprove = async (req, res) => {
 
     const { userId, courseIds } = req.body;
 
-    if (!userId || !Array.isArray(courseIds)) {
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({
-        message: "userId and courseIds (array) are required",
+        message: "A valid userId is required",
       });
+    }
+
+    if (!Array.isArray(courseIds)) {
+      return res.status(400).json({
+        message: "courseIds must be an array",
+      });
+    }
+
+    for (const id of courseIds) {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({
+          message: `Invalid courseId format: ${id}`,
+        });
+      }
     }
 
     const user = await User.findById(userId);
@@ -227,6 +276,12 @@ export const assignCoursesAndApprove = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         message: "User not found",
+      });
+    }
+
+    if (user.role !== "student") {
+      return res.status(400).json({
+        message: "Courses can only be assigned to students",
       });
     }
 

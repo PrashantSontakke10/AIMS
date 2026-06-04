@@ -1,0 +1,1140 @@
+{
+  "info": {
+    "_postman_id": "848bb247-fdb9-4674-8848-bc6b5a3bbf40",
+    "name": "AimClasses API with Automated Tests",
+    "description": "Postman Collection for all AimClasses Backend APIs (Auth, Admin, Courses, Chapters, Lectures, and Notes) equipped with automated integration test assertions and dynamic variable chaining.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Authentication",
+      "description": "Endpoints relating to authentication (Login, Token Refresh, and Logout)",
+      "item": [
+        {
+          "name": "Login or Signup",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Response has success message\", function () {",
+                  "    pm.expect(pm.response.json().message).to.include(\"successful\");",
+                  "});",
+                  "pm.test(\"Tokens are returned and stored\", function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property(\"accessToken\");",
+                  "    pm.expect(response).to.have.property(\"refreshToken\");",
+                  "    if (response.accessToken) {",
+                  "        pm.collectionVariables.set(\"accessToken\", response.accessToken);",
+                  "    }",
+                  "    if (response.refreshToken) {",
+                  "        pm.collectionVariables.set(\"refreshToken\", response.refreshToken);",
+                  "    }",
+                  "    if (response.user && response.user.id) {",
+                  "        pm.collectionVariables.set(\"studentUserId\", response.user.id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mobile\": \"+919999999999\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Authenticates a user via mobile number. If the user does not exist, they are signed up. If their number is listed in ADMIN_MOBILES in the backend's `.env`, they will be automatically registered/promoted to `admin` with `active` status. Otherwise, they are created as a `student` with `pending` status. Generates and returns both an `accessToken` and a `refreshToken`."
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Access Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"New access token is returned and stored\", function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property(\"accessToken\");",
+                  "    if (response.accessToken) {",
+                  "        pm.collectionVariables.set(\"accessToken\", response.accessToken);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/refresh-token",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "refresh-token"
+              ]
+            },
+            "description": "Obtain a new `accessToken` using a valid `refreshToken`."
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Logged out successfully\", function () {",
+                  "    pm.expect(pm.response.json().message).to.equal(\"Logged out\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{studentUserId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Logs out a user and invalidates their refresh token in the database."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Admin Management",
+      "description": "Endpoints restricted to administrative users. Used to manage students, approve/block them, and assign/remove courses.",
+      "item": [
+        {
+          "name": "Get Students List",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Response is an array of students\", function () {",
+                  "    pm.expect(pm.response.json()).to.be.an(\"array\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/students?status=pending",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "students"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "pending",
+                  "description": "Optional filter: pending, active, blocked"
+                }
+              ]
+            },
+            "description": "Retrieve all registered students. You can optionally filter them using the `status` query parameter (e.g. pending, active, blocked)."
+          },
+          "response": []
+        },
+        {
+          "name": "Approve Student",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Student approved successfully\", function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.message).to.equal(\"Student approved successfully\");",
+                  "    pm.expect(response.user.status).to.equal(\"active\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{studentUserId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/approve",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "approve"
+              ]
+            },
+            "description": "Approves a pending student so they can access their dashboard and features."
+          },
+          "response": []
+        },
+        {
+          "name": "Block Student",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Student blocked successfully\", function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.message).to.equal(\"Student blocked successfully\");",
+                  "    pm.expect(response.user.status).to.equal(\"blocked\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{studentUserId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/block",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "block"
+              ]
+            },
+            "description": "Blocks a student and nullifies their refresh token to invalidate their active sessions."
+          },
+          "response": []
+        },
+        {
+          "name": "Assign Course",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Course assigned successfully\", function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.message).to.equal(\"Course assigned successfully\");",
+                  "    pm.expect(response.user.assignedCourses).to.include(pm.collectionVariables.get(\"lastCourseId\"));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{studentUserId}}\",\n  \"courseId\": \"{{lastCourseId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/assign-course",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "assign-course"
+              ]
+            },
+            "description": "Assigns a specific course to a student. If the student status was 'pending', it gets promoted to 'active' automatically."
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Course",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Course removed successfully\", function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.message).to.equal(\"Course removed successfully\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{studentUserId}}\",\n  \"courseId\": \"{{lastCourseId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/remove-course",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "remove-course"
+              ]
+            },
+            "description": "Removes an assigned course from a student's profile."
+          },
+          "response": []
+        },
+        {
+          "name": "Assign Multiple Courses & Approve",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Bulk assignment and approval successful\", function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.message).to.include(\"approved and courses assigned\");",
+                  "    pm.expect(response.user.status).to.equal(\"active\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{studentUserId}}\",\n  \"courseIds\": [\n    \"{{lastCourseId}}\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/assign-courses",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "assign-courses"
+              ]
+            },
+            "description": "Legacy bulk assignment endpoint. Assigns an array of course IDs and automatically approves the student (sets status to active)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Courses Management",
+      "description": "Endpoints to create and query courses.",
+      "item": [
+        {
+          "name": "Get All Courses",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Response is an array of courses\", function () {",
+                  "    pm.expect(pm.response.json()).to.be.an(\"array\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/courses",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "courses"
+              ]
+            },
+            "description": "Retrieve a list of all courses. Accessible by all authenticated users."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Course",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"Course object is returned and stored\", function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property(\"_id\");",
+                  "    pm.expect(response).to.have.property(\"title\");",
+                  "    if (response._id) {",
+                  "        pm.collectionVariables.set(\"lastCourseId\", response._id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Grade 10 Mathematics\",\n  \"description\": \"Full syllabus for Grade 10 Math\",\n  \"code\": \"MATH10\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/courses",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "courses"
+              ]
+            },
+            "description": "Create a new course. Access restricted to Admin only."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Chapters Management",
+      "description": "Endpoints to manage chapters within courses.",
+      "item": [
+        {
+          "name": "Create Chapter",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"Chapter object is returned and stored\", function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property(\"_id\");",
+                  "    pm.expect(response.course).to.equal(pm.collectionVariables.get(\"lastCourseId\"));",
+                  "    if (response._id) {",
+                  "        pm.collectionVariables.set(\"lastChapterId\", response._id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Chapter 1: Real Numbers\",\n  \"description\": \"Introduction to Euclid's division algorithm and fundamental theorem of arithmetic.\",\n  \"courseId\": \"{{lastCourseId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/chapters",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "chapters"
+              ]
+            },
+            "description": "Create a new chapter linked to a course. Admin only."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Chapters by Course",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Response is an array of chapters\", function () {",
+                  "    pm.expect(pm.response.json()).to.be.an(\"array\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/chapters/:courseId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "chapters",
+                ":courseId"
+              ],
+              "variable": [
+                {
+                  "key": "courseId",
+                  "value": "{{lastCourseId}}",
+                  "description": "The ID of the Course to fetch chapters for"
+                }
+              ]
+            },
+            "description": "Retrieve all chapters belonging to a specific course ID. Accessible by authenticated users."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Chapter",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Chapter updated successfully\", function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.title).to.include(\"Updated Title\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Chapter 1: Real Numbers (Updated Title)\",\n  \"description\": \"Updated chapter details.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/chapters/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "chapters",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{lastChapterId}}",
+                  "description": "The ID of the Chapter to update"
+                }
+              ]
+            },
+            "description": "Update specific fields of a chapter. Admin only."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Chapter",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Chapter deleted successfully message\", function () {",
+                  "    pm.expect(pm.response.json().message).to.equal(\"Chapter deleted successfully\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/chapters/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "chapters",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{lastChapterId}}",
+                  "description": "The ID of the Chapter to delete"
+                }
+              ]
+            },
+            "description": "Deletes a chapter. Admin only."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. Lectures Management",
+      "description": "Endpoints to manage lectures inside chapters.",
+      "item": [
+        {
+          "name": "Create Lecture",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"Lecture object is returned and stored\", function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property(\"_id\");",
+                  "    pm.expect(response.chapter).to.equal(pm.collectionVariables.get(\"lastChapterId\"));",
+                  "    if (response._id) {",
+                  "        pm.collectionVariables.set(\"lastLectureId\", response._id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Lecture 1: Rational Numbers\",\n  \"description\": \"Understanding properties of rational and irrational numbers.\",\n  \"videoUrl\": \"https://drive.google.com/file/d/1Uq6DYgRQ0ZAr4wprvWx7N6q6PkHDItZo/view\",\n  \"chapterId\": \"{{lastChapterId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/lectures",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "lectures"
+              ]
+            },
+            "description": "Create a new lecture linked to a chapter. Admin only."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Lectures by Chapter",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Response is an array of lectures\", function () {",
+                  "    pm.expect(pm.response.json()).to.be.an(\"array\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/lectures/:chapterId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "lectures",
+                ":chapterId"
+              ],
+              "variable": [
+                {
+                  "key": "chapterId",
+                  "value": "{{lastChapterId}}",
+                  "description": "The ID of the Chapter to fetch lectures for"
+                }
+              ]
+            },
+            "description": "Retrieve all lectures belonging to a specific chapter ID. Accessible by authenticated users."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Lecture",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Lecture updated successfully\", function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.title).to.include(\"Updated Title\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Lecture 1: Rational Numbers (Updated Title)\",\n  \"description\": \"Updated lecture description.\",\n  \"videoUrl\": \"https://drive.google.com/file/d/new-video-url/view\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/lectures/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "lectures",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{lastLectureId}}",
+                  "description": "The ID of the Lecture to update"
+                }
+              ]
+            },
+            "description": "Update specific fields of a lecture. Admin only."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Lecture",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Lecture deleted successfully message\", function () {",
+                  "    pm.expect(pm.response.json().message).to.equal(\"Lecture deleted successfully\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/lectures/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "lectures",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{lastLectureId}}",
+                  "description": "The ID of the Lecture to delete"
+                }
+              ]
+            },
+            "description": "Deletes a lecture. Admin only."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "6. Notes Management",
+      "description": "Endpoints to manage notes (PDFs/documents) inside chapters. Files are automatically uploaded and organized in Google Drive by course title.",
+      "item": [
+        {
+          "name": "Create Note",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"Notes array is returned and stored\", function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.be.an(\"array\");",
+                  "    pm.expect(response.length).to.be.greaterThan(0);",
+                  "    const firstNote = response[0];",
+                  "    pm.expect(firstNote).to.have.property(\"_id\");",
+                  "    pm.expect(firstNote).to.have.property(\"fileId\");",
+                  "    pm.expect(firstNote.chapter).to.equal(pm.collectionVariables.get(\"lastChapterId\"));",
+                  "    if (firstNote._id) {",
+                  "        pm.collectionVariables.set(\"lastNoteId\", firstNote._id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "Chapter 1 Biology Handout",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Core concepts and definitions for Chapter 1",
+                  "type": "text"
+                },
+                {
+                  "key": "chapterId",
+                  "value": "{{lastChapterId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "files",
+                  "description": "Document or PDF files to upload (can upload multiple files at a time)",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/notes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "notes"
+              ]
+            },
+            "description": "Upload one or more note files and map them to a chapter. Course folder is dynamically created in Google Drive using the Course Title if it does not already exist. Admin only."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Notes by Chapter",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Response is an array of notes\", function () {",
+                  "    pm.expect(pm.response.json()).to.be.an(\"array\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/notes/:chapterId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "notes",
+                ":chapterId"
+              ],
+              "variable": [
+                {
+                  "key": "chapterId",
+                  "value": "{{lastChapterId}}",
+                  "description": "The ID of the Chapter to fetch notes for"
+                }
+              ]
+            },
+            "description": "Retrieve all notes belonging to a specific chapter. Accessible by all authenticated students and admins."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Note",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Note deleted successfully message\", function () {",
+                  "    pm.expect(pm.response.json().message).to.equal(\"Note deleted successfully\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/notes/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "notes",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{lastNoteId}}",
+                  "description": "The ID of the Note to delete"
+                }
+              ]
+            },
+            "description": "Deletes a note from both the database and Google Drive. Admin only."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "YOUR_ACCESS_TOKEN_HERE",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "YOUR_REFRESH_TOKEN_HERE",
+      "type": "string"
+    },
+    {
+      "key": "studentUserId",
+      "value": "STUDENT_USER_ID_HERE",
+      "type": "string"
+    },
+    {
+      "key": "lastCourseId",
+      "value": "COURSE_ID_HERE",
+      "type": "string"
+    },
+    {
+      "key": "lastChapterId",
+      "value": "CHAPTER_ID_HERE",
+      "type": "string"
+    },
+    {
+      "key": "lastLectureId",
+      "value": "LECTURE_ID_HERE",
+      "type": "string"
+    },
+    {
+      "key": "lastNoteId",
+      "value": "NOTE_ID_HERE",
+      "type": "string"
+    }
+  ]
+}
