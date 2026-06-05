@@ -13,12 +13,17 @@ import {
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import api from "../../../services/api";
-import { Colors, Spacing } from "../../../constants/theme";
+import { Spacing } from "../../../constants/theme";
+import { useAppTheme } from "../../../context/ThemeContext";
 
 export default function CourseDetail() {
+  const { colors } = useAppTheme();
+  const styles = getStyles(colors);
+  
   const { courseId, courseTitle } = useLocalSearchParams();
   const [chapters, setChapters] = useState([]);
   const [loading, setLoading] = useState(true);
+  
   // Chapter modals states
   const [modalVisible, setModalVisible] = useState(false);
   const [editingChapter, setEditingChapter] = useState(null);
@@ -31,7 +36,7 @@ export default function CourseDetail() {
   const fetchChapters = async () => {
     try {
       const response = await api.get(`/chapters/${courseId}`);
-      setChapters(response.data);
+      setChapters(response.data || []);
     } catch (e) {
       console.error("Error fetching chapters:", e);
     } finally {
@@ -127,7 +132,7 @@ export default function CourseDetail() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.navyPrimary} />
+        <ActivityIndicator size="large" color={colors.navyPrimary} />
       </View>
     );
   }
@@ -237,7 +242,7 @@ export default function CourseDetail() {
                 <TextInput
                   style={styles.input}
                   placeholder="e.g. Chapter 1: Real Numbers"
-                  placeholderTextColor="#A0AEC0"
+                  placeholderTextColor={colors.textSecondary}
                   value={title}
                   onChangeText={setTitle}
                 />
@@ -248,7 +253,7 @@ export default function CourseDetail() {
                 <TextInput
                   style={[styles.input, styles.textArea]}
                   placeholder="Describe Euclid's division algorithm etc..."
-                  placeholderTextColor="#A0AEC0"
+                  placeholderTextColor={colors.textSecondary}
                   multiline
                   numberOfLines={4}
                   value={description}
@@ -263,7 +268,7 @@ export default function CourseDetail() {
                 activeOpacity={0.8}
               >
                 {submitLoading ? (
-                  <ActivityIndicator color={Colors.textLight} />
+                  <ActivityIndicator color={colors.textLight} />
                 ) : (
                   <Text style={styles.submitBtnText}>
                     {editingChapter ? "Save Changes" : "Add Chapter"}
@@ -278,33 +283,34 @@ export default function CourseDetail() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.offWhite,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: Colors.offWhite,
+    backgroundColor: colors.offWhite,
   },
   header: {
     padding: Spacing.four,
-    backgroundColor: Colors.navyPrimary,
+    backgroundColor: colors.navyPrimary,
   },
   backBtn: {
     alignSelf: "flex-start",
     marginBottom: Spacing.one,
   },
   backBtnText: {
-    color: Colors.textLight,
+    color: colors.textLight,
     fontWeight: "bold",
     fontSize: 14,
   },
   courseHeaderTitle: {
     fontSize: 22,
     fontWeight: "bold",
-    color: Colors.textLight,
+    color: colors.textLight,
     marginBottom: Spacing.half,
   },
   sectionHeading: {
@@ -319,23 +325,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: Spacing.four,
     paddingVertical: Spacing.three,
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: colors.border,
   },
   chaptersCountText: {
     fontSize: 14,
     fontWeight: "600",
-    color: Colors.text,
+    color: colors.text,
   },
   addBtn: {
-    backgroundColor: Colors.navySecondary,
+    backgroundColor: colors.accentBlue,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.one,
     borderRadius: Spacing.one,
   },
   addBtnText: {
-    color: Colors.textLight,
+    color: colors.textLight,
     fontWeight: "bold",
     fontSize: 13,
   },
@@ -345,11 +351,13 @@ const styles = StyleSheet.create({
   },
   chapterCard: {
     flexDirection: "row",
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
     borderRadius: Spacing.two,
     padding: Spacing.four,
     justifyContent: "space-between",
-    ...Colors.cardShadow,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...colors.cardShadow,
   },
   chapterDetails: {
     flex: 1,
@@ -358,18 +366,18 @@ const styles = StyleSheet.create({
   chapterTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    color: Colors.text,
+    color: colors.text,
     marginBottom: Spacing.one,
   },
   chapterDesc: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     lineHeight: 18,
     marginBottom: Spacing.two,
   },
   viewLecturesLink: {
     fontSize: 12,
-    color: Colors.accentBlue,
+    color: colors.accentBlue,
     fontWeight: "700",
   },
   cardActions: {
@@ -380,9 +388,11 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: Colors.offWhite,
+    backgroundColor: colors.offWhite,
     justifyContent: "center",
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   actionEmoji: {
     fontSize: 14,
@@ -393,19 +403,20 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
   emptyText: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontSize: 15,
     marginBottom: Spacing.four,
   },
   emptyBtn: {
     borderWidth: 1,
-    borderColor: Colors.navyPrimary,
+    borderColor: colors.navyPrimary,
     borderRadius: Spacing.two,
     paddingVertical: Spacing.two,
     paddingHorizontal: Spacing.four,
+    backgroundColor: colors.background,
   },
   emptyBtnText: {
-    color: Colors.navyPrimary,
+    color: colors.navyPrimary,
     fontWeight: "bold",
   },
   modalOverlay: {
@@ -414,7 +425,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
     borderTopLeftRadius: Spacing.four,
     borderTopRightRadius: Spacing.four,
     padding: Spacing.four,
@@ -425,20 +436,20 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: colors.border,
     paddingBottom: Spacing.two,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: Colors.text,
+    color: colors.text,
   },
   closeBtn: {
     padding: Spacing.one,
   },
   closeBtnText: {
     fontSize: 20,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
   },
   modalBody: {
     paddingVertical: Spacing.three,
@@ -449,31 +460,31 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 12,
     fontWeight: "600",
-    color: Colors.text,
+    color: colors.text,
     marginBottom: Spacing.one,
   },
   input: {
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border,
     borderRadius: Spacing.one,
     padding: Spacing.two,
     fontSize: 15,
-    color: Colors.text,
-    backgroundColor: Colors.offWhite,
+    color: colors.text,
+    backgroundColor: colors.offWhite,
   },
   textArea: {
     height: 80,
     textAlignVertical: "top",
   },
   submitBtn: {
-    backgroundColor: Colors.navyPrimary,
+    backgroundColor: colors.navyPrimary,
     borderRadius: Spacing.two,
     padding: Spacing.three,
     alignItems: "center",
     marginTop: Spacing.two,
   },
   submitBtnText: {
-    color: Colors.textLight,
+    color: colors.textLight,
     fontWeight: "bold",
     fontSize: 16,
   },

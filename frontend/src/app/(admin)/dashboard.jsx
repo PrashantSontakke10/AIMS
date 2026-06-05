@@ -10,9 +10,12 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import api from "../../services/api";
-import { Colors, Spacing } from "../../constants/theme";
+import { Spacing } from "../../constants/theme";
+import { useAppTheme } from "../../context/ThemeContext";
 
 export default function AdminDashboard() {
+  const { colors } = useAppTheme();
+  const styles = getStyles(colors);
   const [students, setStudents] = useState([]);
   const [coursesCount, setCoursesCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -25,8 +28,8 @@ export default function AdminDashboard() {
         api.get("/api/admin/students"),
         api.get("/courses"),
       ]);
-      setStudents(studentsRes.data);
-      setCoursesCount(coursesRes.data.length);
+      setStudents(studentsRes.data || []);
+      setCoursesCount((coursesRes.data || []).length);
     } catch (e) {
       console.error("Error fetching dashboard data:", e);
     } finally {
@@ -47,7 +50,6 @@ export default function AdminDashboard() {
   const handleApprove = async (userId) => {
     try {
       await api.patch("/api/admin/approve", { userId });
-      // Update local state
       setStudents((prev) =>
         prev.map((s) => (s._id === userId ? { ...s, status: "active" } : s)),
       );
@@ -59,12 +61,11 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.navyPrimary} />
+        <ActivityIndicator size="large" color={colors.navyPrimary} />
       </View>
     );
   }
 
-  const totalStudents = students.length;
   const pendingStudents = students.filter((s) => s.status === "pending");
   const activeStudents = students.filter((s) => s.status === "active").length;
   const blockedStudents = students.filter((s) => s.status === "blocked").length;
@@ -93,7 +94,7 @@ export default function AdminDashboard() {
         <View style={[styles.metricCard, styles.metricCardActive]}>
           <Text style={styles.metricEmoji}>🟢</Text>
           <Text style={styles.metricLabel}>Active Students</Text>
-          <Text style={[styles.metricValue, { color: Colors.active }]}>
+          <Text style={[styles.metricValue, { color: colors.active }]}>
             {activeStudents}
           </Text>
         </View>
@@ -101,7 +102,7 @@ export default function AdminDashboard() {
         <View style={[styles.metricCard, styles.metricCardPending]}>
           <Text style={styles.metricEmoji}>🟡</Text>
           <Text style={styles.metricLabel}>Awaiting Approval</Text>
-          <Text style={[styles.metricValue, { color: Colors.pending }]}>
+          <Text style={[styles.metricValue, { color: colors.pending }]}>
             {pendingStudents.length}
           </Text>
         </View>
@@ -109,7 +110,7 @@ export default function AdminDashboard() {
         <View style={[styles.metricCard, styles.metricCardBlocked]}>
           <Text style={styles.metricEmoji}>🔴</Text>
           <Text style={styles.metricLabel}>Blocked Students</Text>
-          <Text style={[styles.metricValue, { color: Colors.blocked }]}>
+          <Text style={[styles.metricValue, { color: colors.blocked }]}>
             {blockedStudents}
           </Text>
         </View>
@@ -155,9 +156,13 @@ export default function AdminDashboard() {
         ) : (
           pendingStudents.slice(0, 5).map((student) => (
             <View key={student._id} style={styles.studentRow}>
-              <View>
-                <Text style={styles.studentMobile}>{student.mobile}</Text>
-                <Text style={styles.studentSubtext}>Role: {student.role}</Text>
+              <View style={{ flex: 1, marginRight: Spacing.two }}>
+                <Text style={styles.studentMobile} numberOfLines={1}>
+                  {student.name ? `${student.name} (${student.mobile})` : student.mobile}
+                </Text>
+                <Text style={styles.studentSubtext} numberOfLines={1}>
+                  {student.address ? `Address: ${student.address}` : `Role: ${student.role}`}
+                </Text>
               </View>
               <TouchableOpacity
                 style={styles.approveBtn}
@@ -174,15 +179,17 @@ export default function AdminDashboard() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     padding: Spacing.four,
+    backgroundColor: colors.offWhite,
+    flexGrow: 1,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: Colors.offWhite,
+    backgroundColor: colors.offWhite,
   },
   header: {
     marginBottom: Spacing.four,
@@ -190,11 +197,11 @@ const styles = StyleSheet.create({
   welcomeTitle: {
     fontSize: 24,
     fontWeight: "bold",
-    color: Colors.text,
+    color: colors.text,
   },
   welcomeSubtitle: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     marginTop: Spacing.half,
   },
   metricsGrid: {
@@ -206,22 +213,24 @@ const styles = StyleSheet.create({
   metricCard: {
     flex: 1,
     minWidth: 140,
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
     borderRadius: Spacing.two,
     padding: Spacing.three,
-    ...Colors.cardShadow,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...colors.cardShadow,
   },
   metricCardActive: {
     borderLeftWidth: 3,
-    borderLeftColor: Colors.active,
+    borderLeftColor: colors.active,
   },
   metricCardPending: {
     borderLeftWidth: 3,
-    borderLeftColor: Colors.pending,
+    borderLeftColor: colors.pending,
   },
   metricCardBlocked: {
     borderLeftWidth: 3,
-    borderLeftColor: Colors.blocked,
+    borderLeftColor: colors.blocked,
   },
   metricEmoji: {
     fontSize: 24,
@@ -229,19 +238,19 @@ const styles = StyleSheet.create({
   },
   metricLabel: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontWeight: "600",
   },
   metricValue: {
     fontSize: 28,
     fontWeight: "bold",
-    color: Colors.text,
+    color: colors.text,
     marginTop: Spacing.half,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: Colors.text,
+    color: colors.text,
     marginBottom: Spacing.three,
   },
   actionsGrid: {
@@ -251,12 +260,12 @@ const styles = StyleSheet.create({
   },
   actionTile: {
     flex: 1,
-    backgroundColor: Colors.navyPrimary,
+    backgroundColor: colors.navyPrimary,
     borderRadius: Spacing.two,
     padding: Spacing.four,
     alignItems: "center",
     justifyContent: "center",
-    ...Colors.cardShadow,
+    ...colors.cardShadow,
   },
   actionIcon: {
     fontSize: 32,
@@ -265,7 +274,7 @@ const styles = StyleSheet.create({
   actionLabel: {
     fontSize: 14,
     fontWeight: "bold",
-    color: Colors.textLight,
+    color: colors.textLight,
   },
   pendingSection: {
     marginTop: Spacing.two,
@@ -278,49 +287,53 @@ const styles = StyleSheet.create({
   },
   viewAllBtnText: {
     fontSize: 14,
-    color: Colors.accentBlue,
+    color: colors.accentBlue,
     fontWeight: "600",
   },
   emptyCard: {
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
     borderRadius: Spacing.two,
     padding: Spacing.four,
     alignItems: "center",
-    ...Colors.cardShadow,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...colors.cardShadow,
   },
   emptyCardText: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     textAlign: "center",
   },
   studentRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
     padding: Spacing.three,
     borderRadius: Spacing.two,
     marginBottom: Spacing.two,
-    ...Colors.cardShadow,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...colors.cardShadow,
   },
   studentMobile: {
     fontSize: 15,
     fontWeight: "600",
-    color: Colors.text,
+    color: colors.text,
   },
   studentSubtext: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     marginTop: Spacing.half,
   },
   approveBtn: {
-    backgroundColor: Colors.active,
+    backgroundColor: colors.active,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.one,
     borderRadius: Spacing.one,
   },
   approveBtnText: {
-    color: Colors.textLight,
+    color: colors.textLight,
     fontWeight: "bold",
     fontSize: 13,
   },

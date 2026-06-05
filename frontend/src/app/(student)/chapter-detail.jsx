@@ -4,10 +4,14 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronDown, ChevronUp, PlayCircle, BookOpen, ArrowLeft } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getChapters, getLectures } from '../../services/studentApi';
-import { Colors, Spacing } from '../../constants/theme';
+import { Spacing } from '../../constants/theme';
+import { useAppTheme } from '../../context/ThemeContext';
 
 export default function ChapterDetailScreen() {
   const { courseId, courseTitle } = useLocalSearchParams();
+  const { colors } = useAppTheme();
+  const styles = getStyles(colors);
+  
   const [chapters, setChapters] = useState([]);
   const [lecturesByChapter, setLecturesByChapter] = useState({});
   const [expandedChapterId, setExpandedChapterId] = useState(null);
@@ -19,7 +23,6 @@ export default function ChapterDetailScreen() {
     const fetchChapters = async () => {
       try {
         const data = await getChapters(courseId);
-        // Sort chapters by sortOrder
         const sorted = data.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
         setChapters(sorted);
       } catch (error) {
@@ -42,7 +45,6 @@ export default function ChapterDetailScreen() {
 
     setExpandedChapterId(chapterId);
 
-    // Fetch lectures if they are not already cached/loaded
     if (!lecturesByChapter[chapterId]) {
       setLecturesLoading(prev => ({ ...prev, [chapterId]: true }));
       try {
@@ -72,7 +74,7 @@ export default function ChapterDetailScreen() {
   if (chaptersLoading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.navyPrimary} />
+        <ActivityIndicator size="large" color={colors.navyPrimary} />
         <Text style={styles.loadingText}>Loading Syllabus...</Text>
       </SafeAreaView>
     );
@@ -80,7 +82,7 @@ export default function ChapterDetailScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={Colors.navyPrimary} />
+      <StatusBar barStyle="light-content" backgroundColor={colors.navyPrimary} />
       
       {/* Top Header Navigation */}
       <View style={styles.header}>
@@ -88,7 +90,7 @@ export default function ChapterDetailScreen() {
           onPress={() => router.back()}
           style={styles.backBtn}
         >
-          <ArrowLeft color={Colors.textLight} size={20} />
+          <ArrowLeft color={colors.textLight} size={20} />
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
           <Text style={styles.headerSubtitle} numberOfLines={1}>{courseTitle}</Text>
@@ -99,7 +101,7 @@ export default function ChapterDetailScreen() {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {chapters.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <BookOpen color={Colors.textSecondary} size={48} />
+            <BookOpen color={colors.textSecondary} size={48} />
             <Text style={styles.emptyText}>Syllabus is empty</Text>
             <Text style={styles.emptySubtext}>No chapters added to this course yet.</Text>
           </View>
@@ -134,9 +136,9 @@ export default function ChapterDetailScreen() {
                     </Text>
                   </View>
                   {isExpanded ? (
-                    <ChevronUp color={Colors.navyPrimary} size={20} />
+                    <ChevronUp color={colors.textSecondary} size={20} />
                   ) : (
-                    <ChevronDown color={Colors.navyPrimary} size={20} />
+                    <ChevronDown color={colors.textSecondary} size={20} />
                   )}
                 </TouchableOpacity>
 
@@ -145,7 +147,7 @@ export default function ChapterDetailScreen() {
                   <View style={styles.lecturesContainer}>
                     {isLectLoading ? (
                       <View style={styles.lecturesLoading}>
-                        <ActivityIndicator size="small" color={Colors.navyPrimary} />
+                        <ActivityIndicator size="small" color={colors.navyPrimary} />
                         <Text style={styles.lecturesLoadingText}>Loading lectures...</Text>
                       </View>
                     ) : lectures.length === 0 ? (
@@ -159,7 +161,7 @@ export default function ChapterDetailScreen() {
                           onPress={() => handleLecturePress(lecture)}
                           style={styles.lectureRow}
                         >
-                          <PlayCircle color={Colors.navyPrimary} size={22} style={styles.playIcon} />
+                          <PlayCircle color={colors.navyPrimary} size={22} style={styles.playIcon} />
                           <View style={styles.lectureInfo}>
                             <Text style={styles.lectureTitle}>
                               {lecture.title}
@@ -185,19 +187,19 @@ export default function ChapterDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.offWhite,
+    backgroundColor: colors.offWhite,
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: Colors.offWhite,
+    backgroundColor: colors.offWhite,
     justifyContent: 'center',
     alignItems: 'center',
   },
   loadingText: {
-    color: Colors.navyPrimary,
+    color: colors.navyPrimary,
     marginTop: Spacing.three,
     fontWeight: '600',
     fontSize: 16,
@@ -208,8 +210,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.four,
     paddingVertical: Spacing.three,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.navySecondary,
-    backgroundColor: Colors.navyPrimary,
+    borderBottomColor: colors.navySecondary,
+    backgroundColor: colors.navyPrimary,
   },
   backBtn: {
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
@@ -228,7 +230,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   headerTitle: {
-    color: Colors.textLight,
+    color: colors.textLight,
     fontWeight: 'bold',
     fontSize: 18,
   },
@@ -241,24 +243,24 @@ const styles = StyleSheet.create({
     marginTop: 64,
   },
   emptyText: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     marginTop: Spacing.three,
     fontSize: 16,
     fontWeight: 'bold',
   },
   emptySubtext: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontSize: 14,
     marginTop: Spacing.half,
   },
   chapterCard: {
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
     borderRadius: Spacing.three,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border,
     marginBottom: Spacing.three,
     overflow: 'hidden',
-    ...Colors.cardShadow,
+    ...colors.cardShadow,
   },
   chapterHeader: {
     flexDirection: 'row',
@@ -271,26 +273,26 @@ const styles = StyleSheet.create({
     marginRight: Spacing.three,
   },
   chapterNumber: {
-    color: Colors.accentBlue,
+    color: colors.accentBlue,
     fontWeight: 'bold',
     fontSize: 12,
     textTransform: 'uppercase',
     marginBottom: 4,
   },
   chapterTitle: {
-    color: Colors.navyPrimary,
+    color: colors.text,
     fontWeight: 'bold',
     fontSize: 16,
   },
   chapterSubtext: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontSize: 12,
     marginTop: 4,
   },
   lecturesContainer: {
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
-    backgroundColor: Colors.offWhite,
+    borderTopColor: colors.border,
+    backgroundColor: colors.offWhite,
     padding: Spacing.two,
   },
   lecturesLoading: {
@@ -299,7 +301,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   lecturesLoadingText: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     marginTop: Spacing.two,
     fontSize: 12,
   },
@@ -309,7 +311,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   emptyLecturesText: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontStyle: 'italic',
     fontSize: 14,
   },
@@ -318,10 +320,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: Spacing.three,
     borderRadius: Spacing.two,
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
     marginBottom: Spacing.two,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border,
   },
   playIcon: {
     marginRight: Spacing.three,
@@ -331,17 +333,17 @@ const styles = StyleSheet.create({
     marginRight: Spacing.two,
   },
   lectureTitle: {
-    color: Colors.text,
+    color: colors.text,
     fontWeight: '600',
     fontSize: 14,
   },
   lectureDesc: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontSize: 12,
     marginTop: 2,
   },
   watchText: {
-    color: Colors.accentBlue,
+    color: colors.accentBlue,
     fontSize: 13,
     fontWeight: 'bold',
   },

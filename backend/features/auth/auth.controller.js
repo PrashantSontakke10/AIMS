@@ -4,15 +4,15 @@ import User from "./auth.model.js";
 
 import { generateAccessToken, generateRefreshToken} from "../../utils/generateTokens.js";
 
-// Helper function to validate mobile format (10-15 digits, optional leading +)
+// Helper function to validate mobile format (exactly 10 digits)
 const validateMobile = (mobile) => {
-  const mobileRegex = /^\+?[0-9]{10,15}$/;
-  return mobileRegex.test(mobile);
+  const cleaned = mobile.replace(/\D/g, "");
+  return cleaned.length === 10;
 };
 
 export const login = async (req, res) => {
   try {
-    const { mobile } = req.body;
+    const { mobile, password, firstName, lastName, address, role } = req.body;
 
     if (!mobile) {
       return res.status(400).json({
@@ -20,26 +20,59 @@ export const login = async (req, res) => {
       });
     }
 
-    const cleanedMobile = mobile.trim();
-    if (!validateMobile(cleanedMobile)) {
+    const cleanedMobile = mobile.replace(/\D/g, "").slice(-10);
+    if (cleanedMobile.length !== 10) {
       return res.status(400).json({
-        message: "Invalid mobile number format. Must be 10-15 digits, optionally starting with '+'",
+        message: "Invalid mobile number format. Must be exactly 10 digits.",
       });
+    }
+
+    const adminMobiles = process.env.ADMIN_MOBILES ? process.env.ADMIN_MOBILES.split(",").map(m => m.replace(/\D/g, "").slice(-10)) : [];
+    const isAdminMobile = adminMobiles.includes(cleanedMobile);
+
+    // If user wants to log in as admin, or is an admin mobile logging in
+    if (role === "admin" || isAdminMobile) {
+      if (!isAdminMobile) {
+        return res.status(403).json({
+          message: "Access denied. This mobile number is not registered as admin.",
+        });
+      }
+      if (!password || password !== process.env.ADMIN_PASS) {
+        return res.status(401).json({
+          message: "Invalid admin password.",
+        });
+      }
     }
 
     // Check if the user already exists
     let user = await User.findOne({ mobile: cleanedMobile });
 
-    const adminMobiles = process.env.ADMIN_MOBILES ? process.env.ADMIN_MOBILES.split(",") : [];
-    const isAdminMobile = adminMobiles.includes(cleanedMobile);
-
     if (!user) {
       // Create new user if not found (Signup)
-      user = await User.create({
-        mobile: cleanedMobile,
-        role: isAdminMobile ? "admin" : "student",
-        status: (isAdminMobile || cleanedMobile === "+918888888888") ? "active" : "pending",
-      });
+      if (role === "admin" || isAdminMobile) {
+        user = await User.create({
+          mobile: cleanedMobile,
+          role: "admin",
+          status: "active",
+        });
+      } else {
+        // Student signup - require registration fields
+        if (!firstName || !lastName || !address) {
+          return res.status(200).json({
+            requiresRegistration: true,
+            message: "Please complete registration to continue.",
+          });
+        }
+        user = await User.create({
+          mobile: cleanedMobile,
+          firstName,
+          lastName,
+          address,
+          name: `${firstName} ${lastName}`.trim(),
+          role: "student",
+          status: "active", // Direct access after details input
+        });
+      }
     } else {
       // Check if user is blocked
       if (user.status === "blocked") {
@@ -48,13 +81,9 @@ export const login = async (req, res) => {
         });
       }
 
-      if (isAdminMobile && user.role !== "admin") {
+      if ((role === "admin" || isAdminMobile) && user.role !== "admin") {
         // Automatically promote to admin if mobile is added to .env
         user.role = "admin";
-        user.status = "active";
-        await user.save();
-      } else if (cleanedMobile === "+918888888888" && user.status === "pending") {
-        // Automatically activate demo student
         user.status = "active";
         await user.save();
       }
@@ -64,8 +93,6 @@ export const login = async (req, res) => {
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
-    // Overwriting the refresh token in the database implements the single-device restriction:
-    // If they sign in on another device, this gets overwritten, invalidating the previous session.
     user.refreshToken = refreshToken;
     await user.save();
 
@@ -76,6 +103,10 @@ export const login = async (req, res) => {
       user: {
         id: user._id,
         mobile: user.mobile,
+        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        address: user.address,
         role: user.role,
         status: user.status,
         assignedCourses: user.assignedCourses,
@@ -161,6 +192,54 @@ export const logout = async (req, res) => {
 
     res.json({
       message: "Logged out",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { userId, firstName, lastName, address, email } = req.body;
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({
+        message: "A valid userId is required",
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    if (firstName !== undefined) user.firstName = firstName;
+    if (lastName !== undefined) user.lastName = lastName;
+    if (address !== undefined) user.address = address;
+    if (email !== undefined) user.email = email;
+    if (firstName !== undefined || lastName !== undefined) {
+      user.name = `${firstName || ""} ${lastName || ""}`.trim() || user.name;
+    }
+
+    await user.save();
+
+    res.json({
+      message: "Profile updated successfully",
+      user: {
+        id: user._id,
+        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        address: user.address,
+        email: user.email,
+        mobile: user.mobile,
+        role: user.role,
+        status: user.status,
+        assignedCourses: user.assignedCourses,
+      },
     });
   } catch (error) {
     res.status(500).json({

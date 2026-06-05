@@ -6,9 +6,12 @@ import { FileText, ArrowLeft, ShieldAlert } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { getNotes } from '../../services/studentApi';
-import { Colors, Spacing } from '../../constants/theme';
+import { Spacing } from '../../constants/theme';
+import { useAppTheme } from '../../context/ThemeContext';
 
 export default function LecturePlayerScreen() {
+  const { colors } = useAppTheme();
+  const styles = getStyles(colors);
   const { lectureId, lectureTitle, videoUrl, chapterId, lectureDesc } = useLocalSearchParams();
   const [notes, setNotes] = useState([]);
   const [notesLoading, setNotesLoading] = useState(true);
@@ -1056,7 +1059,7 @@ export default function LecturePlayerScreen() {
 
   return (
     <SafeAreaView style={isFullscreen ? { flex: 1, backgroundColor: '#000' } : styles.container}>
-      <StatusBar hidden={isFullscreen} barStyle="light-content" backgroundColor={Colors.navyPrimary} />
+      <StatusBar hidden={isFullscreen} barStyle="light-content" backgroundColor={colors.navyPrimary} />
       
       {/* Header */}
       {!isFullscreen && (
@@ -1065,7 +1068,7 @@ export default function LecturePlayerScreen() {
             onPress={() => router.back()}
             style={styles.backBtn}
           >
-            <ArrowLeft color={Colors.textLight} size={20} />
+            <ArrowLeft color={colors.textLight} size={20} />
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
             <Text style={styles.headerSubtitle}>Video Lecture</Text>
@@ -1233,7 +1236,7 @@ export default function LecturePlayerScreen() {
           )
         ) : (
           <View style={styles.noVideoContainer}>
-            <ShieldAlert color={Colors.textSecondary} size={48} />
+            <ShieldAlert color={colors.textSecondary} size={48} />
             <Text style={styles.noVideoText}>No video source provided</Text>
           </View>
         )}
@@ -1252,19 +1255,19 @@ export default function LecturePlayerScreen() {
         <View style={styles.materialsSection}>
           <View style={styles.sectionHeaderRow}>
             <View style={styles.sectionIconContainer}>
-              <FileText color={Colors.textLight} size={18} />
+              <FileText color={colors.textLight} size={18} />
             </View>
             <Text style={styles.sectionTitle}>Handouts & Study Notes ({notes.length})</Text>
           </View>
 
           {notesLoading ? (
             <View style={styles.notesLoadingContainer}>
-              <ActivityIndicator size="small" color={Colors.navyPrimary} />
+              <ActivityIndicator size="small" color={colors.navyPrimary} />
               <Text style={styles.notesLoadingText}>Fetching lecture materials...</Text>
             </View>
           ) : notes.length === 0 ? (
             <View style={styles.emptyNotesCard}>
-              <FileText color={Colors.textSecondary} size={40} />
+              <FileText color={colors.textSecondary} size={40} />
               <Text style={styles.emptyNotesText}>No resources uploaded yet</Text>
               <Text style={styles.emptyNotesSubtitle}>Study materials for this lecture will appear here.</Text>
             </View>
@@ -1278,7 +1281,7 @@ export default function LecturePlayerScreen() {
                   activeOpacity={0.8}
                 >
                   <View style={styles.noteIconContainer}>
-                    <FileText color={Colors.navyPrimary} size={22} />
+                    <FileText color={colors.navyPrimary} size={22} />
                   </View>
                   <View style={styles.noteDetails}>
                     <Text style={styles.noteTitle} numberOfLines={1}>
@@ -1300,10 +1303,10 @@ export default function LecturePlayerScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.offWhite,
+    backgroundColor: colors.offWhite,
   },
   header: {
     flexDirection: 'row',
@@ -1311,8 +1314,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.four,
     paddingVertical: Spacing.three,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.navySecondary,
-    backgroundColor: Colors.navyPrimary,
+    borderBottomColor: colors.navySecondary,
+    backgroundColor: colors.navyPrimary,
   },
   backBtn: {
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
@@ -1331,7 +1334,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   headerTitle: {
-    color: Colors.textLight,
+    color: colors.textLight,
     fontWeight: 'bold',
     fontSize: 18,
   },
@@ -1357,28 +1360,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#1A202C',
   },
   noVideoText: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     marginTop: Spacing.two,
     fontWeight: '500',
   },
   descriptionBox: {
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border,
     borderRadius: Spacing.two,
     padding: Spacing.three,
     marginHorizontal: Spacing.four,
     marginTop: Spacing.four,
-    ...Colors.cardShadow,
+    ...colors.cardShadow,
   },
   descriptionTitle: {
-    color: Colors.navyPrimary,
+    color: colors.navyPrimary,
     fontWeight: 'bold',
     fontSize: 14,
     marginBottom: 4,
   },
   descriptionText: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontSize: 13,
     lineHeight: 18,
   },
@@ -1393,13 +1396,13 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.three,
   },
   sectionIconContainer: {
-    backgroundColor: Colors.navyPrimary,
+    backgroundColor: colors.navyPrimary,
     padding: 6,
     borderRadius: 8,
     marginRight: Spacing.two,
   },
   sectionTitle: {
-    color: Colors.navyPrimary,
+    color: colors.navyPrimary,
     fontWeight: 'bold',
     fontSize: 18,
   },
@@ -1410,28 +1413,28 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.five,
   },
   notesLoadingText: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     marginTop: Spacing.two,
     fontSize: 14,
   },
   emptyNotesCard: {
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border,
     borderRadius: Spacing.three,
     padding: Spacing.five,
     alignItems: 'center',
     marginTop: Spacing.two,
-    ...Colors.cardShadow,
+    ...colors.cardShadow,
   },
   emptyNotesText: {
-    color: Colors.navyPrimary,
+    color: colors.navyPrimary,
     marginTop: Spacing.three,
     fontWeight: 'bold',
     fontSize: 16,
   },
   emptyNotesSubtitle: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontSize: 14,
     textAlign: 'center',
     marginTop: Spacing.one,
@@ -1440,18 +1443,18 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.five,
   },
   noteItem: {
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
     borderRadius: Spacing.two,
     padding: Spacing.three,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border,
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: Spacing.two,
-    ...Colors.cardShadow,
+    ...colors.cardShadow,
   },
   noteIconContainer: {
-    backgroundColor: Colors.accentLight,
+    backgroundColor: colors.accentLight,
     width: 44,
     height: 44,
     borderRadius: 8,
@@ -1464,25 +1467,25 @@ const styles = StyleSheet.create({
     marginRight: Spacing.two,
   },
   noteTitle: {
-    color: Colors.navyPrimary,
+    color: colors.text,
     fontWeight: 'bold',
     fontSize: 14,
   },
   noteSubtitle: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontSize: 11,
     marginTop: 2,
     fontWeight: '600',
   },
   openText: {
-    color: Colors.accentBlue,
+    color: colors.accentBlue,
     fontWeight: 'bold',
     fontSize: 12,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border,
     paddingHorizontal: Spacing.three,
     paddingVertical: 6,
     borderRadius: 16,
-    backgroundColor: Colors.offWhite,
+    backgroundColor: colors.offWhite,
   },
 });

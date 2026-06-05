@@ -10,11 +10,14 @@ import {
 } from "react-native";
 import { Colors } from "../constants/theme";
 
+import { ThemeProvider, useAppTheme } from "../context/ThemeContext";
+
 function RootLayoutNav() {
   const { user, loading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
   const [isShowSplash, setIsShowSplash] = useState(true);
+  const { colors } = useAppTheme();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -72,20 +75,21 @@ function RootLayoutNav() {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.navyPrimary} />
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.navyPrimary} />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <StatusBar
-        barStyle="light-content"
-        backgroundColor={Colors.navyPrimary}
+        barStyle={colors.isDark ? "light-content" : "dark-content"}
+        backgroundColor={colors.offWhite}
       />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
+        <Stack.Screen name="register" />
         <Stack.Screen name="pending" />
         <Stack.Screen name="(admin)" />
         <Stack.Screen name="(student)" />
@@ -97,7 +101,9 @@ function RootLayoutNav() {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <RootLayoutNav />
+      <ThemeProvider>
+        <RootLayoutNav />
+      </ThemeProvider>
     </AuthProvider>
   );
 }

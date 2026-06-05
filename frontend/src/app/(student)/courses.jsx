@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, FlatList, TouchableOpacity, Image, TextInput, ActivityIndicator, StatusBar } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Search, BookOpen, GraduationCap } from 'lucide-react-native';
+import { Search, BookOpen } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getCourses } from '../../services/studentApi';
-import { Colors, Spacing } from '../../constants/theme';
+import { Spacing } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
+import { useAppTheme } from '../../context/ThemeContext';
 
 export default function CourseCatalogScreen() {
   const { user } = useAuth();
+  const { colors } = useAppTheme();
+  const styles = getStyles(colors);
+  
   const [courses, setCourses] = useState([]);
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [subjects, setSubjects] = useState([]);
@@ -21,11 +25,10 @@ export default function CourseCatalogScreen() {
   const fetchCoursesData = async () => {
     try {
       const data = await getCourses();
-      setCourses(data);
-      setFilteredCourses(data);
+      setCourses(data || []);
+      setFilteredCourses(data || []);
       
-      // Extract unique subjects for subject filters
-      const uniqueSubjects = ['All', ...new Set(data.map(c => c.subject).filter(Boolean))];
+      const uniqueSubjects = ['All', ...new Set((data || []).map(c => c.subject).filter(Boolean))];
       setSubjects(uniqueSubjects);
     } catch (error) {
       console.error('Error fetching courses:', error);
@@ -66,7 +69,7 @@ export default function CourseCatalogScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.navyPrimary} />
+        <ActivityIndicator size="large" color={colors.navyPrimary} />
         <Text style={styles.loadingText}>Loading Courses...</Text>
       </SafeAreaView>
     );
@@ -74,7 +77,7 @@ export default function CourseCatalogScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.offWhite} />
+      <StatusBar barStyle={colors.isDark ? "light-content" : "dark-content"} backgroundColor={colors.offWhite} />
       <View style={styles.headerContainer}>
         {/* Header Title */}
         <View style={styles.headerRow}>
@@ -83,20 +86,20 @@ export default function CourseCatalogScreen() {
             style={styles.headerLogo}
             resizeMode="cover"
           />
-          <View>
+          <View style={{ flex: 1 }}>
             <Text style={styles.headerTitle}>Welcome Back!</Text>
-            <Text style={styles.headerSubtitle}>
-              {user?.mobile ? `Logged in: ${user.mobile}` : "Select a course to start learning"}
+            <Text style={styles.headerSubtitle} numberOfLines={1}>
+              {user?.name ? `${user.name} (${user.mobile})` : (user?.mobile ? `Logged in: ${user.mobile}` : "Select a course to start learning")}
             </Text>
           </View>
         </View>
 
         {/* Search Bar */}
         <View style={styles.searchBar}>
-          <Search color={Colors.textSecondary} size={20} />
+          <Search color={colors.textSecondary} size={20} />
           <TextInput
             placeholder="Search courses..."
-            placeholderTextColor={Colors.textSecondary}
+            placeholderTextColor={colors.textSecondary}
             style={styles.searchInput}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -164,7 +167,7 @@ export default function CourseCatalogScreen() {
                 />
               ) : (
                 <View style={styles.thumbnailPlaceholder}>
-                  <BookOpen color={Colors.border} size={60} />
+                  <BookOpen color={colors.border} size={60} />
                 </View>
               )}
               {/* Subject Badge */}
@@ -191,7 +194,7 @@ export default function CourseCatalogScreen() {
         )}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <BookOpen color={Colors.textSecondary} size={48} />
+            <BookOpen color={colors.textSecondary} size={48} />
             <Text style={styles.emptyTitle}>No courses found</Text>
             <Text style={styles.emptySubtitle}>Try resetting your subject filter or search query</Text>
           </View>
@@ -201,19 +204,19 @@ export default function CourseCatalogScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.offWhite,
+    backgroundColor: colors.offWhite,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.offWhite,
+    backgroundColor: colors.offWhite,
   },
   loadingText: {
-    color: Colors.navyPrimary,
+    color: colors.navyPrimary,
     marginTop: Spacing.three,
     fontWeight: '600',
     fontSize: 16,
@@ -234,33 +237,33 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     marginRight: Spacing.three,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: Colors.navyPrimary,
+    color: colors.text,
     letterSpacing: -0.5,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
     paddingHorizontal: Spacing.three,
     paddingVertical: 10,
     borderRadius: Spacing.two,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border,
     marginBottom: Spacing.three,
-    ...Colors.cardShadow,
+    ...colors.cardShadow,
   },
   searchInput: {
     flex: 1,
-    color: Colors.text,
+    color: colors.text,
     fontSize: 16,
     marginLeft: Spacing.two,
     padding: 0,
@@ -269,7 +272,7 @@ const styles = StyleSheet.create({
     padding: Spacing.one,
   },
   clearSearchText: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontWeight: 'bold',
     fontSize: 16,
   },
@@ -281,39 +284,39 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.one,
     borderRadius: 20,
     marginRight: Spacing.two,
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border,
   },
   filterChipActive: {
-    backgroundColor: Colors.navyPrimary,
-    borderColor: Colors.navyPrimary,
+    backgroundColor: colors.navyPrimary,
+    borderColor: colors.navyPrimary,
   },
   filterChipText: {
     fontWeight: '600',
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
   },
   filterChipTextActive: {
-    color: Colors.textLight,
+    color: colors.textLight,
   },
   coursesList: {
     paddingHorizontal: Spacing.four,
     paddingBottom: Spacing.four,
   },
   courseCard: {
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
     borderRadius: Spacing.three,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border,
     marginBottom: Spacing.four,
-    ...Colors.cardShadow,
+    ...colors.cardShadow,
   },
   thumbnailContainer: {
     height: 176,
     width: '100%',
-    backgroundColor: Colors.offWhite,
+    backgroundColor: colors.offWhite,
     position: 'relative',
   },
   thumbnail: {
@@ -325,7 +328,7 @@ const styles = StyleSheet.create({
     height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.accentLight,
+    backgroundColor: colors.accentLight,
   },
   badgeContainer: {
     position: 'absolute',
@@ -336,10 +339,10 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: Colors.navySecondary,
+    borderColor: colors.navySecondary,
   },
   badgeText: {
-    color: Colors.textLight,
+    color: colors.textLight,
     fontWeight: 'bold',
     fontSize: 10,
     letterSpacing: 1,
@@ -350,12 +353,12 @@ const styles = StyleSheet.create({
   courseTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: Colors.navyPrimary,
+    color: colors.text,
     marginBottom: 6,
   },
   courseDescription: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     lineHeight: 20,
   },
   courseFooter: {
@@ -365,16 +368,16 @@ const styles = StyleSheet.create({
     marginTop: Spacing.four,
     paddingTop: Spacing.three,
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
+    borderTopColor: colors.border,
   },
   badgePremium: {
     fontSize: 11,
     fontWeight: 'bold',
-    color: Colors.accentBlue,
+    color: colors.accentBlue,
     letterSpacing: 0.5,
   },
   startLearningText: {
-    color: Colors.navyPrimary,
+    color: colors.accentBlue,
     fontWeight: 'bold',
     fontSize: 14,
   },
@@ -386,12 +389,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: Colors.textSecondary,
+    color: colors.text,
     marginTop: Spacing.three,
   },
   emptySubtitle: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     marginTop: Spacing.one,
     textAlign: 'center',
   },

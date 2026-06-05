@@ -14,11 +14,14 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../context/AuthContext";
-import { Colors, Spacing } from "../../constants/theme";
+import { Spacing } from "../../constants/theme";
+import { useAppTheme } from "../../context/ThemeContext";
 
 export default function AdminLayout() {
   const { user, logout } = useAuth();
   const { width } = useWindowDimensions();
+  const { colors } = useAppTheme();
+  const styles = getStyles(colors);
   const router = useRouter();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
@@ -144,7 +147,7 @@ export default function AdminLayout() {
         activeOpacity={0.7}
       >
         <Text style={styles.tabIcon}>🚪</Text>
-        <Text style={[styles.tabLabel, { color: Colors.blocked }]}>Exit</Text>
+        <Text style={[styles.tabLabel, { color: colors.blocked }]}>Exit</Text>
       </TouchableOpacity>
     </View>
   );
@@ -152,8 +155,8 @@ export default function AdminLayout() {
   return (
     <View style={styles.safeArea}>
       <StatusBar
-        barStyle="light-content"
-        backgroundColor={Colors.navyPrimary}
+        barStyle={colors.isDark ? "light-content" : "dark-content"}
+        backgroundColor={colors.navyPrimary}
       />
       <View
         style={[
@@ -276,14 +279,14 @@ export default function AdminLayout() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.navyPrimary,
+    backgroundColor: colors.navyPrimary,
   },
   container: {
     flex: 1,
-    backgroundColor: Colors.offWhite,
+    backgroundColor: colors.offWhite,
   },
   containerRow: {
     flexDirection: "row",
@@ -293,9 +296,9 @@ const styles = StyleSheet.create({
   },
   sidebar: {
     width: 240,
-    backgroundColor: Colors.navyPrimary,
+    backgroundColor: colors.navyPrimary,
     borderRightWidth: 1,
-    borderRightColor: Colors.navySecondary,
+    borderRightColor: colors.navySecondary,
     justifyContent: "space-between",
     paddingVertical: Spacing.four,
     paddingHorizontal: Spacing.three,
@@ -311,18 +314,18 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
     justifyContent: "center",
     alignItems: "center",
   },
   brandIconText: {
     fontSize: 18,
-    color: Colors.navyPrimary,
+    color: colors.navyPrimary,
   },
   brandName: {
     fontSize: 18,
     fontWeight: "bold",
-    color: Colors.textLight,
+    color: colors.textLight,
   },
   brandRole: {
     fontSize: 11,
@@ -352,7 +355,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   sidebarNavLabelActive: {
-    color: Colors.textLight,
+    color: colors.textLight,
     fontWeight: "600",
   },
   sidebarFooter: {
@@ -369,7 +372,7 @@ const styles = StyleSheet.create({
   sidebarLogoutBtn: {
     backgroundColor: "rgba(239, 68, 68, 0.2)",
     borderWidth: 1,
-    borderColor: Colors.blocked,
+    borderColor: colors.blocked,
     borderRadius: Spacing.one,
     paddingVertical: Spacing.one,
     alignItems: "center",
@@ -381,12 +384,12 @@ const styles = StyleSheet.create({
   },
   bottomTabs: {
     height: 60,
-    backgroundColor: Colors.navyPrimary,
+    backgroundColor: colors.navyPrimary,
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
     borderTopWidth: 1,
-    borderTopColor: Colors.navySecondary,
+    borderTopColor: colors.navySecondary,
   },
   tabItem: {
     alignItems: "center",
@@ -401,16 +404,16 @@ const styles = StyleSheet.create({
     marginTop: Spacing.half,
   },
   tabLabelActive: {
-    color: Colors.textLight,
+    color: colors.textLight,
     fontWeight: "bold",
   },
   mainContent: {
     flex: 1,
-    backgroundColor: Colors.offWhite,
+    backgroundColor: colors.offWhite,
   },
   mobileHeader: {
     height: 56,
-    backgroundColor: Colors.navyPrimary,
+    backgroundColor: colors.navyPrimary,
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: Spacing.three,
@@ -436,7 +439,7 @@ const styles = StyleSheet.create({
   mobileHeaderTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    color: Colors.textLight,
+    color: colors.textLight,
   },
   mobileHeaderSubtitle: {
     fontSize: 11,
@@ -451,7 +454,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
     borderTopLeftRadius: Spacing.four,
     borderTopRightRadius: Spacing.four,
     padding: Spacing.four,
@@ -463,20 +466,20 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: colors.border,
     paddingBottom: Spacing.two,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: Colors.text,
+    color: colors.text,
   },
   closeBtn: {
     padding: Spacing.one,
   },
   closeBtnText: {
     fontSize: 20,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
   },
   modalBody: {
     paddingVertical: Spacing.four,
@@ -495,7 +498,7 @@ const styles = StyleSheet.create({
   profileMobileText: {
     fontSize: 20,
     fontWeight: "bold",
-    color: Colors.text,
+    color: colors.text,
     marginBottom: Spacing.one,
   },
   adminBadge: {
@@ -507,12 +510,12 @@ const styles = StyleSheet.create({
   adminBadgeText: {
     fontSize: 11,
     fontWeight: "800",
-    color: Colors.accentBlue,
+    color: colors.accentBlue,
     letterSpacing: 1,
   },
   optionsList: {
     alignSelf: "stretch",
-    backgroundColor: Colors.offWhite,
+    backgroundColor: colors.offWhite,
     borderRadius: Spacing.two,
     padding: Spacing.one,
     marginBottom: Spacing.five,
@@ -523,7 +526,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.three,
     paddingHorizontal: Spacing.three,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: colors.border,
     gap: Spacing.three,
   },
   optionIcon: {
@@ -531,19 +534,19 @@ const styles = StyleSheet.create({
   },
   optionLabel: {
     fontSize: 15,
-    color: Colors.text,
+    color: colors.text,
     fontWeight: "500",
   },
   logoutActionBtn: {
     alignSelf: "stretch",
-    backgroundColor: Colors.blocked,
+    backgroundColor: colors.blocked,
     borderRadius: Spacing.two,
     paddingVertical: Spacing.three,
     alignItems: "center",
     justifyContent: "center",
   },
   logoutActionBtnText: {
-    color: Colors.textLight,
+    color: colors.textLight,
     fontWeight: "bold",
     fontSize: 16,
   },

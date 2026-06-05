@@ -12,15 +12,20 @@ import {
   Alert,
 } from "react-native";
 import api from "../../services/api";
-import { Colors, Spacing } from "../../constants/theme";
+import { Spacing } from "../../constants/theme";
+import { useAppTheme } from "../../context/ThemeContext";
 
 export default function StudentsManagement() {
+  const { colors } = useAppTheme();
+  const styles = getStyles(colors);
+  
   const [students, setStudents] = useState([]);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("pending");
   const [selectedStudent, setSelectedStudent] = useState(null);
+  
   // Assign course modal states
   const [assignModalVisible, setAssignModalVisible] = useState(false);
   const [bulkAssignMode, setBulkAssignMode] = useState(false);
@@ -32,8 +37,8 @@ export default function StudentsManagement() {
         api.get("/api/admin/students"),
         api.get("/courses"),
       ]);
-      setStudents(studentsRes.data);
-      setCourses(coursesRes.data);
+      setStudents(studentsRes.data || []);
+      setCourses(coursesRes.data || []);
     } catch (e) {
       console.error("Error fetching students management data:", e);
     } finally {
@@ -93,7 +98,7 @@ export default function StudentsManagement() {
         courseId,
       });
       const updatedUser = response.data.user;
-      // Update local state lists
+      
       const fullAssignedCourses = courses.filter((c) =>
         updatedUser.assignedCourses.includes(c._id),
       );
@@ -217,7 +222,7 @@ export default function StudentsManagement() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.navyPrimary} />
+        <ActivityIndicator size="large" color={colors.navyPrimary} />
       </View>
     );
   }
@@ -225,7 +230,10 @@ export default function StudentsManagement() {
   const filteredStudents = students.filter(
     (s) =>
       s.status === activeTab &&
-      s.mobile.toLowerCase().includes(search.toLowerCase()),
+      (s.mobile.toLowerCase().includes(search.toLowerCase()) || 
+       (s.name && s.name.toLowerCase().includes(search.toLowerCase())) ||
+       (s.firstName && s.firstName.toLowerCase().includes(search.toLowerCase())) ||
+       (s.lastName && s.lastName.toLowerCase().includes(search.toLowerCase())))
   );
 
   return (
@@ -234,8 +242,8 @@ export default function StudentsManagement() {
         <Text style={styles.title}>Students Management</Text>
         <TextInput
           style={styles.searchBar}
-          placeholder="🔎 Search by mobile number..."
-          placeholderTextColor="#A0AEC0"
+          placeholder="🔎 Search by name or mobile number..."
+          placeholderTextColor={colors.textSecondary}
           value={search}
           onChangeText={setSearch}
         />
@@ -272,10 +280,12 @@ export default function StudentsManagement() {
             onPress={() => setSelectedStudent(item)}
             activeOpacity={0.8}
           >
-            <View>
-              <Text style={styles.studentMobile}>{item.mobile}</Text>
-              <Text style={styles.coursesCount}>
-                📚 Courses: {item.assignedCourses?.length || 0}
+            <View style={{ flex: 1, marginRight: Spacing.two }}>
+              <Text style={styles.studentMobile} numberOfLines={1}>
+                {item.name ? `${item.name} (${item.mobile})` : item.mobile}
+              </Text>
+              <Text style={styles.coursesCount} numberOfLines={1}>
+                📚 Courses: {item.assignedCourses?.length || 0} {item.address ? `• ${item.address}` : ""}
               </Text>
             </View>
             <Text style={styles.detailArrow}>➡️</Text>
@@ -311,8 +321,20 @@ export default function StudentsManagement() {
 
               <ScrollView contentContainerStyle={styles.modalBody}>
                 <Text style={styles.profileMobile}>
+                  {selectedStudent.name ? selectedStudent.name : selectedStudent.mobile}
+                </Text>
+                <Text style={[styles.studentSubtext, { fontSize: 15, marginBottom: Spacing.two }]}>
                   {selectedStudent.mobile}
                 </Text>
+
+                {selectedStudent.address ? (
+                  <View style={{ marginBottom: Spacing.three, alignSelf: 'stretch' }}>
+                    <Text style={styles.boldLabel}>Address:</Text>
+                    <Text style={{ color: colors.text, fontSize: 14, marginTop: 4 }}>
+                      {selectedStudent.address}
+                    </Text>
+                  </View>
+                ) : null}
 
                 <View style={styles.profileStatusRow}>
                   <Text style={styles.boldLabel}>Status:</Text>
@@ -320,14 +342,14 @@ export default function StudentsManagement() {
                     style={[
                       styles.badge,
                       {
-                        backgroundColor: `${Colors[selectedStudent.status]}15`,
+                        backgroundColor: `${colors[selectedStudent.status]}20`,
                       },
                     ]}
                   >
                     <Text
                       style={[
                         styles.badgeText,
-                        { color: Colors[selectedStudent.status] },
+                        { color: colors[selectedStudent.status] },
                       ]}
                     >
                       {selectedStudent.status.toUpperCase()}
@@ -409,9 +431,8 @@ export default function StudentsManagement() {
                     style={styles.bulkAssignTriggerBtn}
                     onPress={() => {
                       setBulkAssignMode(true);
-                      // Pre-fill selected state with already assigned courses
                       setSelectedCoursesForBulk(
-                        selectedStudent.assignedCourses.map((c) => c._id),
+                        (selectedStudent.assignedCourses || []).map((c) => c._id),
                       );
                       setAssignModalVisible(true);
                     }}
@@ -451,7 +472,7 @@ export default function StudentsManagement() {
 
             <ScrollView contentContainerStyle={styles.modalBody}>
               {courses.map((course) => {
-                const isAssigned = selectedStudent?.assignedCourses.some(
+                const isAssigned = selectedStudent?.assignedCourses?.some(
                   (c) => c._id === course._id,
                 );
                 const isSelectedInBulk = selectedCoursesForBulk.includes(
@@ -531,39 +552,40 @@ export default function StudentsManagement() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.offWhite,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: Colors.offWhite,
+    backgroundColor: colors.offWhite,
   },
   header: {
     padding: Spacing.four,
-    backgroundColor: Colors.navyPrimary,
+    backgroundColor: colors.navyPrimary,
   },
   title: {
     fontSize: 22,
     fontWeight: "bold",
-    color: Colors.textLight,
+    color: colors.textLight,
     marginBottom: Spacing.three,
   },
   searchBar: {
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
     borderRadius: Spacing.two,
     paddingHorizontal: Spacing.three,
     height: 44,
-    color: Colors.text,
+    color: colors.text,
     fontSize: 15,
   },
   tabsRow: {
     flexDirection: "row",
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-    backgroundColor: Colors.background,
+    borderBottomColor: colors.border,
+    backgroundColor: colors.background,
   },
   tabButton: {
     flex: 1,
@@ -572,45 +594,46 @@ const styles = StyleSheet.create({
   },
   tabButtonActive: {
     borderBottomWidth: 3,
-    borderBottomColor: Colors.navyPrimary,
+    borderBottomColor: colors.navyPrimary,
   },
   tabButtonText: {
     fontSize: 12,
     fontWeight: "600",
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
   },
   tabButtonTextActive: {
-    color: Colors.navyPrimary,
+    color: colors.navyPrimary,
     fontWeight: "bold",
   },
   studentCard: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
     padding: Spacing.three,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: colors.border,
   },
   studentMobile: {
     fontSize: 16,
     fontWeight: "600",
-    color: Colors.text,
+    color: colors.text,
   },
   coursesCount: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     marginTop: Spacing.half,
   },
   detailArrow: {
     fontSize: 16,
+    color: colors.textSecondary,
   },
   emptyContainer: {
     padding: Spacing.six,
     alignItems: "center",
   },
   emptyText: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontSize: 14,
   },
   modalOverlay: {
@@ -619,7 +642,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
     borderTopLeftRadius: Spacing.four,
     borderTopRightRadius: Spacing.four,
     padding: Spacing.four,
@@ -631,20 +654,20 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: colors.border,
     paddingBottom: Spacing.two,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: Colors.text,
+    color: colors.text,
   },
   closeBtn: {
     padding: Spacing.one,
   },
   closeBtnText: {
     fontSize: 20,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
   },
   modalBody: {
     paddingTop: Spacing.three,
@@ -653,7 +676,7 @@ const styles = StyleSheet.create({
   profileMobile: {
     fontSize: 22,
     fontWeight: "bold",
-    color: Colors.text,
+    color: colors.text,
   },
   profileStatusRow: {
     flexDirection: "row",
@@ -664,7 +687,7 @@ const styles = StyleSheet.create({
   boldLabel: {
     fontSize: 14,
     fontWeight: "600",
-    color: Colors.text,
+    color: colors.text,
     marginRight: Spacing.two,
   },
   badge: {
@@ -688,19 +711,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   approveBtn: {
-    backgroundColor: Colors.active,
+    backgroundColor: colors.active,
   },
   blockBtn: {
-    backgroundColor: Colors.blocked,
+    backgroundColor: colors.blocked,
   },
   btnTextLight: {
-    color: Colors.textLight,
+    color: colors.textLight,
     fontWeight: "bold",
     fontSize: 15,
   },
   coursesSection: {
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
+    borderTopColor: colors.border,
     paddingTop: Spacing.four,
   },
   coursesHeader: {
@@ -712,22 +735,22 @@ const styles = StyleSheet.create({
   sectionHeaderTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    color: Colors.text,
+    color: colors.text,
   },
   addCourseBtn: {
     paddingVertical: Spacing.one,
     paddingHorizontal: Spacing.two,
     borderRadius: Spacing.one,
-    backgroundColor: Colors.accentLight,
+    backgroundColor: colors.accentLight,
   },
   addCourseBtnText: {
-    color: Colors.accentBlue,
+    color: colors.accentBlue,
     fontSize: 13,
     fontWeight: "bold",
   },
   noCoursesText: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontStyle: "italic",
     marginBottom: Spacing.three,
   },
@@ -735,7 +758,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: Colors.offWhite,
+    backgroundColor: colors.offWhite,
     padding: Spacing.two,
     borderRadius: Spacing.one,
     marginBottom: Spacing.two,
@@ -746,11 +769,11 @@ const styles = StyleSheet.create({
   courseRowTitle: {
     fontSize: 14,
     fontWeight: "600",
-    color: Colors.text,
+    color: colors.text,
   },
   courseRowCode: {
     fontSize: 11,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     marginTop: Spacing.half,
   },
   removeCourseBtn: {
@@ -758,21 +781,21 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.one,
   },
   removeCourseText: {
-    color: Colors.blocked,
+    color: colors.blocked,
     fontWeight: "600",
     fontSize: 12,
   },
   bulkAssignTriggerBtn: {
     marginTop: Spacing.four,
     borderWidth: 1,
-    borderColor: Colors.accentBlue,
+    borderColor: colors.accentBlue,
     borderRadius: Spacing.two,
     padding: Spacing.three,
     alignItems: "center",
-    backgroundColor: Colors.accentLight,
+    backgroundColor: colors.accentLight,
   },
   bulkAssignTriggerBtnText: {
-    color: Colors.accentBlue,
+    color: colors.accentBlue,
     fontWeight: "bold",
     fontSize: 14,
   },
@@ -782,13 +805,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: Spacing.three,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: colors.border,
   },
   courseOptionCardSelected: {
-    backgroundColor: Colors.accentLight,
+    backgroundColor: colors.accentLight,
   },
   courseOptionCardDisabled: {
-    backgroundColor: "#EDF2F7",
+    backgroundColor: colors.offWhite,
     opacity: 0.6,
   },
   courseOptionDetails: {
@@ -797,43 +820,43 @@ const styles = StyleSheet.create({
   courseOptionTitle: {
     fontSize: 15,
     fontWeight: "600",
-    color: Colors.text,
+    color: colors.text,
   },
   courseOptionCode: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     marginTop: Spacing.half,
   },
   assignedBadgeText: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontWeight: "500",
   },
   checkbox: {
     width: 24,
     height: 24,
     borderWidth: 2,
-    borderColor: Colors.border,
+    borderColor: colors.border,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
   },
   checkboxChecked: {
-    backgroundColor: Colors.accentBlue,
-    borderColor: Colors.accentBlue,
+    backgroundColor: colors.accentBlue,
+    borderColor: colors.accentBlue,
   },
   checkboxCheckmark: {
-    color: Colors.textLight,
+    color: colors.textLight,
     fontWeight: "bold",
     fontSize: 12,
   },
   bulkSubmitContainer: {
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
+    borderTopColor: colors.border,
     paddingTop: Spacing.three,
   },
   bulkSubmitBtn: {
-    backgroundColor: Colors.navyPrimary,
+    backgroundColor: colors.navyPrimary,
     borderRadius: Spacing.two,
     height: 48,
     alignItems: "center",

@@ -2,18 +2,22 @@ import React from 'react';
 import { StyleSheet, View, Text, StatusBar, ScrollView } from 'react-native';
 import { Download, Inbox } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors, Spacing } from '../../constants/theme';
+import { Spacing } from '../../constants/theme';
+import { useAppTheme } from '../../context/ThemeContext';
 
 export default function DownloadsScreen() {
+  const { colors } = useAppTheme();
+  const styles = getStyles(colors);
+
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={Colors.navyPrimary} />
+      <StatusBar barStyle="light-content" backgroundColor={colors.navyPrimary} />
       
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerRow}>
           <View style={styles.headerIconContainer}>
-            <Download color={Colors.textLight} size={24} />
+            <Download color={colors.textLight} size={24} />
           </View>
           <View>
             <Text style={styles.headerTitle}>My Downloads</Text>
@@ -25,7 +29,7 @@ export default function DownloadsScreen() {
       {/* Empty State */}
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.emptyCard}>
-          <Inbox color={Colors.textSecondary} size={50} />
+          <Inbox color={colors.textSecondary} size={50} />
           <Text style={styles.emptyTitle}>No downloads yet</Text>
           <Text style={styles.emptySubtitle}>
             Notes and handouts you choose to save offline will appear here for access without an active internet connection.
@@ -36,17 +40,17 @@ export default function DownloadsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.offWhite,
+    backgroundColor: colors.offWhite,
   },
   header: {
     paddingHorizontal: Spacing.four,
     paddingVertical: Spacing.three,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.navySecondary,
-    backgroundColor: Colors.navyPrimary,
+    borderBottomColor: colors.navySecondary,
+    backgroundColor: colors.navyPrimary,
   },
   headerRow: {
     flexDirection: 'row',
@@ -59,7 +63,7 @@ const styles = StyleSheet.create({
     marginRight: Spacing.three,
   },
   headerTitle: {
-    color: Colors.textLight,
+    color: colors.textLight,
     fontWeight: 'bold',
     fontSize: 20,
   },
@@ -75,25 +79,25 @@ const styles = StyleSheet.create({
     padding: Spacing.five,
   },
   emptyCard: {
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border,
     padding: Spacing.five,
     borderRadius: Spacing.three,
     alignItems: 'center',
     width: '100%',
     maxWidth: 360,
-    ...Colors.cardShadow,
+    ...colors.cardShadow,
   },
   emptyTitle: {
-    color: Colors.navyPrimary,
+    color: colors.text,
     fontWeight: 'bold',
     fontSize: 18,
     marginTop: Spacing.three,
     textAlign: 'center',
   },
   emptySubtitle: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontSize: 14,
     marginTop: Spacing.two,
     textAlign: 'center',

@@ -4,7 +4,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { WebView } from 'react-native-webview';
 import { ArrowLeft, Shield } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors, Spacing } from '../../constants/theme';
+import { Spacing } from '../../constants/theme';
+import { useAppTheme } from '../../context/ThemeContext';
 
 const DOCUMENT_PROTECTION_JS = `
   (function() {
@@ -68,6 +69,8 @@ const DOCUMENT_PROTECTION_JS = `
 
 export default function NoteViewerScreen() {
   const { noteTitle, googleDriveViewLink } = useLocalSearchParams();
+  const { colors } = useAppTheme();
+  const styles = getStyles(colors);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -84,7 +87,7 @@ export default function NoteViewerScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={Colors.navyPrimary} />
+      <StatusBar barStyle="light-content" backgroundColor={colors.navyPrimary} />
       
       {/* Header */}
       <View style={styles.header}>
@@ -92,14 +95,14 @@ export default function NoteViewerScreen() {
           onPress={() => router.back()}
           style={styles.backBtn}
         >
-          <ArrowLeft color={Colors.textLight} size={20} />
+          <ArrowLeft color={colors.textLight} size={20} />
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
           <Text style={styles.headerSubtitle}>Document Viewer</Text>
           <Text style={styles.headerTitle} numberOfLines={1}>{noteTitle}</Text>
         </View>
         <View style={styles.secureBadge}>
-          <Shield color={Colors.textLight} size={13} />
+          <Shield color={colors.textLight} size={13} />
           <Text style={styles.secureBadgeText}>SECURE</Text>
         </View>
       </View>
@@ -128,7 +131,7 @@ export default function NoteViewerScreen() {
 
         {loading && (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={Colors.navyPrimary} />
+            <ActivityIndicator size="large" color={colors.navyPrimary} />
             <Text style={styles.loadingText}>Loading secure viewer...</Text>
           </View>
         )}
@@ -137,10 +140,10 @@ export default function NoteViewerScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.offWhite,
+    backgroundColor: colors.offWhite,
   },
   header: {
     flexDirection: 'row',
@@ -148,8 +151,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.four,
     paddingVertical: Spacing.three,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.navySecondary,
-    backgroundColor: Colors.navyPrimary,
+    borderBottomColor: colors.navySecondary,
+    backgroundColor: colors.navyPrimary,
   },
   backBtn: {
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
@@ -169,14 +172,14 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   headerTitle: {
-    color: Colors.textLight,
+    color: colors.textLight,
     fontWeight: 'bold',
     fontSize: 16,
   },
   secureBadge: {
     backgroundColor: 'rgba(16, 185, 129, 0.2)',
     borderWidth: 1,
-    borderColor: Colors.active,
+    borderColor: colors.active,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
@@ -184,7 +187,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   secureBadgeText: {
-    color: Colors.textLight,
+    color: colors.textLight,
     fontSize: 10,
     fontWeight: 'bold',
     marginLeft: 4,
@@ -200,7 +203,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   noDocumentText: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
   },
   loadingContainer: {
     position: 'absolute',
@@ -208,12 +211,12 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
     bottom: 0,
-    backgroundColor: Colors.offWhite,
+    backgroundColor: colors.offWhite,
     justifyContent: 'center',
     alignItems: 'center',
   },
   loadingText: {
-    color: Colors.navyPrimary,
+    color: colors.navyPrimary,
     marginTop: Spacing.three,
     fontWeight: '600',
   },
