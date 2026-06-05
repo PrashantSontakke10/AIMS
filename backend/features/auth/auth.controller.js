@@ -38,7 +38,7 @@ export const login = async (req, res) => {
       user = await User.create({
         mobile: cleanedMobile,
         role: isAdminMobile ? "admin" : "student",
-        status: isAdminMobile ? "active" : "pending",
+        status: (isAdminMobile || cleanedMobile === "+918888888888") ? "active" : "pending",
       });
     } else {
       // Check if user is blocked
@@ -51,6 +51,10 @@ export const login = async (req, res) => {
       if (isAdminMobile && user.role !== "admin") {
         // Automatically promote to admin if mobile is added to .env
         user.role = "admin";
+        user.status = "active";
+        await user.save();
+      } else if (cleanedMobile === "+918888888888" && user.status === "pending") {
+        // Automatically activate demo student
         user.status = "active";
         await user.save();
       }
