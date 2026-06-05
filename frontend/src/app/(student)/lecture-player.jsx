@@ -371,15 +371,19 @@ export default function LecturePlayerScreen() {
           .quality-cat-item .cat-sub { font-size: 12px; color: rgba(255,255,255,0.45); font-weight: 400; }
           .quality-cat-item.active .cat-title { color: #fff; }
           .quality-res-item {
-            color: #e8e8e8; padding: 14px 16px 14px 52px;
-            font-size: 15px; font-weight: 500;
+            color: #e8e8e8; padding: 14px 16px; font-size: 14px;
             cursor: pointer; text-align: left; background: none;
             border: none; width: 100%;
             font-family: 'Inter', sans-serif;
+            display: flex; align-items: center; gap: 12px;
             transition: background-color 0.15s;
           }
+          .quality-res-item .check-area {
+            width: 24px; min-width: 24px;
+            display: flex; justify-content: center;
+          }
           .quality-res-item:active { background: rgba(255,255,255,0.08); }
-          .quality-res-item.active { color: #fff; font-weight: 700; }
+          .quality-res-item.active { color: #fff; font-weight: 600; }
           .settings-back-btn {
             color: #fff; padding: 10px 16px; font-size: 13px;
             cursor: pointer; background: none; border: none;
@@ -413,7 +417,9 @@ export default function LecturePlayerScreen() {
       <body>
         <div class="player-container">
           <div class="loader" id="loader"></div>
-          <div id="player-container-inner" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;"></div>
+          <div id="player-container-inner" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;">
+            <div id="player"></div>
+          </div>
           <div class="click-catcher" id="clickCatcher"></div>
           
           <!-- Controls Overlay -->
@@ -454,9 +460,6 @@ export default function LecturePlayerScreen() {
                 </div>
                 
                 <div class="right-controls">
-                  <button class="control-btn" id="ccBtn">
-                    <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" ry="2"></rect><text x="7" y="15" font-family="'Inter', sans-serif" font-size="8" font-weight="bold" fill="currentColor" stroke="none">CC</text></svg>
-                  </button>
                   <button class="control-btn" id="settingsBtn">
                     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                   </button>
@@ -508,42 +511,7 @@ export default function LecturePlayerScreen() {
               <button class="settings-item option-speed" data-speed="2">2x</button>
             </div>
 
-            <!-- Tier 2b: Quality Categories (YouTube-style) -->
-            <div id="settingsQualityOptions" style="display: none;">
-              <div class="quality-header">Quality for current video <span class="header-res" id="qualityHeaderRes"></span></div>
-              <div class="settings-divider"></div>
-              <button class="quality-cat-item active" id="qualityCatAuto" data-cat="auto">
-                <span class="check-area"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
-                <span class="cat-text">
-                  <span class="cat-title">Auto (recommended)</span>
-                  <span class="cat-sub">Adjusts to give you the best experience</span>
-                </span>
-              </button>
-              <button class="quality-cat-item" id="qualityCatHigh" data-cat="high">
-                <span class="check-area"></span>
-                <span class="cat-text">
-                  <span class="cat-title">Higher picture quality</span>
-                  <span class="cat-sub">Uses more data</span>
-                </span>
-              </button>
-              <button class="quality-cat-item" id="qualityCatLow" data-cat="low">
-                <span class="check-area"></span>
-                <span class="cat-text">
-                  <span class="cat-title">Data saver</span>
-                  <span class="cat-sub">Lower picture quality</span>
-                </span>
-              </button>
-              <div class="settings-divider"></div>
-              <button class="quality-cat-item" id="qualityCatAdvanced" data-cat="advanced">
-                <span class="check-area"></span>
-                <span class="cat-text">
-                  <span class="cat-title">Advanced</span>
-                  <span class="cat-sub">Select a specific resolution</span>
-                </span>
-              </button>
-            </div>
-
-            <!-- Tier 3: Advanced Resolution Picker -->
+            <!-- Tier 3: Quality Resolution Picker (Direct) -->
             <div id="settingsAdvancedQuality" style="display: none;">
               <button class="settings-back-btn" id="settingsAdvancedBackBtn">
                 <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; stroke-width: 3; margin-right: 6px; fill: none; stroke: currentColor;"><polyline points="15 18 9 12 15 6"></polyline></svg>
@@ -551,12 +519,34 @@ export default function LecturePlayerScreen() {
               </button>
               <div class="quality-header">Quality for current video <span class="header-res" id="advancedHeaderRes"></span></div>
               <div class="settings-divider"></div>
-              <button class="quality-res-item option-quality" data-quality="hd1080" data-label="1080p">1080p</button>
-              <button class="quality-res-item option-quality" data-quality="hd720" data-label="720p">720p</button>
-              <button class="quality-res-item option-quality" data-quality="large" data-label="480p">480p</button>
-              <button class="quality-res-item option-quality" data-quality="medium" data-label="360p">360p</button>
-              <button class="quality-res-item option-quality" data-quality="small" data-label="240p">240p</button>
-              <button class="quality-res-item option-quality" data-quality="tiny" data-label="144p">144p</button>
+              <button class="quality-res-item option-quality" data-quality="auto" data-label="Auto">
+                <span class="check-area"></span>
+                <span class="res-text" id="autoResText">Auto</span>
+              </button>
+              <button class="quality-res-item option-quality" data-quality="hd1080" data-label="1080p">
+                <span class="check-area"></span>
+                <span class="res-text">1080p</span>
+              </button>
+              <button class="quality-res-item option-quality" data-quality="hd720" data-label="720p">
+                <span class="check-area"></span>
+                <span class="res-text">720p</span>
+              </button>
+              <button class="quality-res-item option-quality" data-quality="large" data-label="480p">
+                <span class="check-area"></span>
+                <span class="res-text">480p</span>
+              </button>
+              <button class="quality-res-item option-quality" data-quality="medium" data-label="360p">
+                <span class="check-area"></span>
+                <span class="res-text">360p</span>
+              </button>
+              <button class="quality-res-item option-quality" data-quality="small" data-label="240p">
+                <span class="check-area"></span>
+                <span class="res-text">240p</span>
+              </button>
+              <button class="quality-res-item option-quality" data-quality="tiny" data-label="144p">
+                <span class="check-area"></span>
+                <span class="res-text">144p</span>
+              </button>
             </div>
           </div>
         </div>
@@ -578,21 +568,18 @@ export default function LecturePlayerScreen() {
           var progressUpdateInterval;
           var controlsTimeout;
           var isMuted = false;
-          var isCCActive = false;
-
-          const loader = document.getElementById('loader');
-          const controlsOverlay = document.getElementById('controlsOverlay');
-          const clickCatcher = document.getElementById('clickCatcher');
-          const playBtn = document.getElementById('playBtn');
-          const playIcon = document.getElementById('playIcon');
-          const centerPlayBtn = document.getElementById('centerPlayBtn');
-          const centerPlayIcon = document.getElementById('centerPlayIcon');
-          const rewindBtn = document.getElementById('rewindBtn');
-          const forwardBtn = document.getElementById('forwardBtn');
-          const timeDisplay = document.getElementById('timeDisplay');
-          const progressSlider = document.getElementById('progressSlider');
-          const ccBtn = document.getElementById('ccBtn');
-          const settingsBtn = document.getElementById('settingsBtn');
+           const loader = document.getElementById('loader');
+           const controlsOverlay = document.getElementById('controlsOverlay');
+           const clickCatcher = document.getElementById('clickCatcher');
+           const playBtn = document.getElementById('playBtn');
+           const playIcon = document.getElementById('playIcon');
+           const centerPlayBtn = document.getElementById('centerPlayBtn');
+           const centerPlayIcon = document.getElementById('centerPlayIcon');
+           const rewindBtn = document.getElementById('rewindBtn');
+           const forwardBtn = document.getElementById('forwardBtn');
+           const timeDisplay = document.getElementById('timeDisplay');
+           const progressSlider = document.getElementById('progressSlider');
+           const settingsBtn = document.getElementById('settingsBtn');
           const settingsMenu = document.getElementById('settingsMenu');
           const fullscreenBtn = document.getElementById('fullscreenBtn');
           var isFullscreen = false;
@@ -612,26 +599,14 @@ export default function LecturePlayerScreen() {
             origin = 'https://youtube.com';
           }
 
-          var embedBaseUrl = 'https://www.youtube.com/embed/${youtubeVideoId}?enablejsapi=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&showinfo=0&origin=' + encodeURIComponent(origin) + '&playsinline=1';
-
-          function buildIframe(extraParams) {
-            var iframe = document.createElement('iframe');
-            iframe.id = 'player';
-            iframe.src = embedBaseUrl + (extraParams || '');
-            iframe.setAttribute('allow', 'autoplay; encrypted-media');
-            iframe.setAttribute('frameborder', '0');
-            iframe.style.position = 'absolute';
-            iframe.style.width = '1920px';
-            iframe.style.height = '1080px';
-            iframe.style.border = 'none';
-            iframe.style.pointerEvents = 'none';
-            iframe.style.zIndex = '1';
-            iframe.style.transformOrigin = 'top left';
-            return iframe;
-          }
-
-          document.getElementById('player-container-inner').appendChild(buildIframe(''));
-          log("Iframe appended successfully");
+          const resDimensions = {
+            'hd1080': { w: 1920, h: 1080 },
+            'hd720': { w: 1280, h: 720 },
+            'large': { w: 854, h: 480 },
+            'medium': { w: 640, h: 360 },
+            'small': { w: 426, h: 240 },
+            'tiny': { w: 256, h: 144 }
+          };
 
           function resizePlayer() {
             const container = document.getElementById('player-container-inner');
@@ -640,21 +615,61 @@ export default function LecturePlayerScreen() {
             const containerWidth = container.clientWidth || window.innerWidth;
             const containerHeight = container.clientHeight || window.innerHeight;
             if (!containerWidth || !containerHeight) return;
-            const baseWidth = 1920;
-            const scale = containerWidth / baseWidth;
-            const targetHeight = containerHeight / scale;
+
+            var baseWidth = 1280;
+            if (currentQuality && currentQuality !== 'auto' && resDimensions[currentQuality]) {
+              baseWidth = resDimensions[currentQuality].w;
+            }
+
+            // Fixed aspect ratio of 16:9
+            const baseHeight = Math.round(baseWidth * 9 / 16);
+
+            const scaleX = containerWidth / baseWidth;
+            const scaleY = containerHeight / baseHeight;
+            const scale = Math.min(scaleX, scaleY);
+
+            const leftoverWidth = containerWidth - (baseWidth * scale);
+            const leftoverHeight = containerHeight - (baseHeight * scale);
+            const left = Math.round(leftoverWidth / 2);
+            const top = Math.round(leftoverHeight / 2);
+            
+            targetIframe.style.position = 'absolute';
             targetIframe.style.width = baseWidth + 'px';
-            targetIframe.style.height = targetHeight + 'px';
+            targetIframe.style.height = baseHeight + 'px';
             targetIframe.style.transform = 'scale(' + scale + ')';
-            targetIframe.style.left = '0px';
-            targetIframe.style.top = '0px';
+            targetIframe.style.left = left + 'px';
+            targetIframe.style.top = top + 'px';
+            targetIframe.style.border = 'none';
+            targetIframe.style.pointerEvents = 'none';
+            targetIframe.style.zIndex = '1';
+            targetIframe.style.transformOrigin = 'top left';
           }
           window.addEventListener('resize', resizePlayer);
           setTimeout(resizePlayer, 100);
 
-          function initPlayer() {
+          function initPlayer(extraPlayerVars) {
             try {
+              var playerVars = {
+                autoplay: 1,
+                controls: 0,
+                modestbranding: 1,
+                rel: 0,
+                iv_load_policy: 3,
+                showinfo: 0,
+                playsinline: 1,
+                enablejsapi: 1,
+                origin: origin
+              };
+              if (extraPlayerVars) {
+                Object.assign(playerVars, extraPlayerVars);
+              }
+              
               player = new YT.Player('player', {
+                height: '1080',
+                width: '1920',
+                videoId: '${youtubeVideoId}',
+                host: 'https://www.youtube-nocookie.com',
+                playerVars: playerVars,
                 events: {
                   'onReady': onPlayerReady,
                   'onStateChange': onPlayerStateChange,
@@ -662,6 +677,7 @@ export default function LecturePlayerScreen() {
                   'onError': onPlayerError
                 }
               });
+              resizePlayer(); // Resize immediately to prevent layout shift
               log("YT.Player wrapper initialized");
             } catch (err) {
               log("Error creating YT.Player: " + err.message);
@@ -670,15 +686,24 @@ export default function LecturePlayerScreen() {
 
           function reloadWithQuality(qualityVal, startTime) {
             log("Reloading player with vq=" + qualityVal + " at t=" + startTime);
-            try { if (player && player.destroy) player.destroy(); } catch(e) {}
+            try { if (player && typeof player.destroy === 'function') player.destroy(); } catch(e) {}
             player = null;
+            
             var container = document.getElementById('player-container-inner');
-            container.innerHTML = '';
-            var vqParam = (qualityVal && qualityVal !== 'auto') ? '&vq=' + qualityVal : '';
-            var startParam = startTime > 0 ? '&start=' + Math.floor(startTime) : '';
-            container.appendChild(buildIframe(vqParam + startParam + '&autoplay=1'));
-            resizePlayer();
-            initPlayer();
+            container.innerHTML = '<div id="player"></div>';
+            resizePlayer(); // Resize placeholder div immediately to prevent layout shift
+            
+            var extraVars = { autoplay: 1 };
+            if (qualityVal && qualityVal !== 'auto') {
+              extraVars.vq = qualityVal;
+            }
+            if (startTime > 0) {
+              extraVars.start = Math.floor(startTime);
+            }
+            
+            setTimeout(function() {
+              initPlayer(extraVars);
+            }, 150);
           }
 
           window.onYouTubeIframeAPIReady = function() {
@@ -693,6 +718,24 @@ export default function LecturePlayerScreen() {
             showControls();
             updateTime();
             progressUpdateInterval = setInterval(updateTime, 250);
+            
+            try {
+              if (player && typeof player.setPlaybackRate === 'function') {
+                player.setPlaybackRate(currentPlaybackRate);
+                log("Playback rate restored to: " + currentPlaybackRate);
+              }
+            } catch (e) {
+              log("Error setting playback rate on ready: " + e.message);
+            }
+
+            try {
+              if (player && typeof player.playVideo === 'function') {
+                player.playVideo();
+                log("Autoplay forced in onReady");
+              }
+            } catch (e) {
+              log("Play video error in onReady: " + e.message);
+            }
           }
 
           function onPlayerQualityChange(event) {
@@ -700,10 +743,20 @@ export default function LecturePlayerScreen() {
             log("onPlayerQualityChange: " + q);
             const resMap = {'highres':'2160p','hd1080':'1080p','hd720':'720p','large':'480p','medium':'360p','small':'240p','tiny':'144p','auto':''};
             const res = resMap[q] || '';
-            var h1 = document.getElementById('qualityHeaderRes');
             var h2 = document.getElementById('advancedHeaderRes');
-            if (h1) h1.innerText = res ? ' · ' + res : '';
             if (h2) h2.innerText = res ? ' · ' + res : '';
+            
+            if (currentQuality === 'auto') {
+              var labelEl = document.getElementById('currentQualityLabel');
+              if (labelEl) {
+                labelEl.innerText = res ? 'Auto (' + res + ')' : 'Auto';
+              }
+              var autoResEl = document.getElementById('autoResText');
+              if (autoResEl) {
+                autoResEl.innerText = res ? 'Auto (' + res + ')' : 'Auto';
+              }
+            }
+            syncAdvancedCheckmarks();
           }
 
           function onPlayerStateChange(event) {
@@ -768,12 +821,12 @@ export default function LecturePlayerScreen() {
               }
 
               // Update quality label dynamically
-              if (typeof player.getPlaybackQuality === 'function') {
+              if (currentQuality === 'auto' && typeof player.getPlaybackQuality === 'function') {
                 const currentLevel = player.getPlaybackQuality();
                 const qualityLabels = {
-                  'highres': '1080p HD',
-                  'hd1080': '1080p HD',
-                  'hd720': '720p HD',
+                  'highres': '1080p',
+                  'hd1080': '1080p',
+                  'hd720': '720p',
                   'large': '480p',
                   'medium': '360p',
                   'small': '240p',
@@ -781,9 +834,15 @@ export default function LecturePlayerScreen() {
                   'auto': 'Auto'
                 };
                 const activeLabel = qualityLabels[currentLevel] || currentLevel;
+                const displayLabel = activeLabel && activeLabel !== 'Auto' ? 'Auto (' + activeLabel + ')' : 'Auto';
+                
                 const currentQualityLabelEl = document.getElementById('currentQualityLabel');
-                if (currentQualityLabelEl && currentQualityLabelEl.innerText !== activeLabel && activeLabel) {
-                  currentQualityLabelEl.innerText = activeLabel;
+                if (currentQualityLabelEl && currentQualityLabelEl.innerText !== displayLabel) {
+                  currentQualityLabelEl.innerText = displayLabel;
+                }
+                const autoResEl = document.getElementById('autoResText');
+                if (autoResEl && autoResEl.innerText !== displayLabel) {
+                  autoResEl.innerText = displayLabel;
                 }
               }
             } catch (err) {
@@ -851,38 +910,15 @@ export default function LecturePlayerScreen() {
 
 
 
-          ccBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (!player) return;
-            isCCActive = !isCCActive;
-            try {
-              if (isCCActive) {
-                player.loadModule("captions");
-                if (typeof player.setOption === 'function') {
-                  player.setOption("captions", "track", {});
-                }
-                ccBtn.style.color = "#ff0000";
-                log("Captions module loaded");
-              } else {
-                player.unloadModule("captions");
-                ccBtn.style.color = "#ffffff";
-                log("Captions module unloaded");
-              }
-            } catch (err) {
-              log("Captions toggle error: " + err.message);
-            }
-            showControls();
-          });
+
 
           const settingsMainOptions = document.getElementById('settingsMainOptions');
           const settingsSpeedOptions = document.getElementById('settingsSpeedOptions');
-          const settingsQualityOptions = document.getElementById('settingsQualityOptions');
           const settingsAdvancedQuality = document.getElementById('settingsAdvancedQuality');
 
           function hideAllPanels() {
             settingsMainOptions.style.display = 'none';
             settingsSpeedOptions.style.display = 'none';
-            settingsQualityOptions.style.display = 'none';
             settingsAdvancedQuality.style.display = 'none';
           }
           function resetSettingsMenu() {
@@ -892,13 +928,16 @@ export default function LecturePlayerScreen() {
 
           var checkSvg = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>';
 
-          function setActiveCat(catId) {
-            document.querySelectorAll('.quality-cat-item').forEach(c => {
-              c.classList.remove('active');
-              c.querySelector('.check-area').innerHTML = '';
+          function syncAdvancedCheckmarks() {
+            document.querySelectorAll('.option-quality').forEach(b => {
+              b.classList.remove('active');
+              var check = b.querySelector('.check-area');
+              if (check) check.innerHTML = '';
+              if (b.dataset.quality === currentQuality) {
+                b.classList.add('active');
+                if (check) check.innerHTML = checkSvg;
+              }
             });
-            var el = document.getElementById(catId);
-            if (el) { el.classList.add('active'); el.querySelector('.check-area').innerHTML = checkSvg; }
           }
 
           function applyQuality(qualityVal, label) {
@@ -906,7 +945,14 @@ export default function LecturePlayerScreen() {
             var curTime = 0;
             try { if (player && typeof player.getCurrentTime === 'function') curTime = player.getCurrentTime(); } catch(e) {}
             document.getElementById('currentQualityLabel').innerText = label;
-            document.querySelectorAll('.option-quality').forEach(b => { b.classList.remove('active'); if (b.dataset.quality === qualityVal) b.classList.add('active'); });
+            
+            var autoResEl = document.getElementById('autoResText');
+            if (autoResEl && qualityVal !== 'auto') {
+              autoResEl.innerText = 'Auto';
+            }
+            
+            syncAdvancedCheckmarks();
+            
             settingsMenu.classList.remove('visible');
             resetSettingsMenu();
             showControls();
@@ -918,11 +964,16 @@ export default function LecturePlayerScreen() {
 
           // Tier 1 → Tier 2 navigation
           document.getElementById('settingsSpeedBtn').addEventListener('click', (e) => { e.stopPropagation(); hideAllPanels(); settingsSpeedOptions.style.display = 'block'; });
-          document.getElementById('settingsQualityBtn').addEventListener('click', (e) => { e.stopPropagation(); hideAllPanels(); settingsQualityOptions.style.display = 'block'; });
+          document.getElementById('settingsQualityBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            hideAllPanels();
+            settingsAdvancedQuality.style.display = 'block';
+            syncAdvancedCheckmarks();
+          });
 
           // Back buttons
           document.getElementById('settingsSpeedBackBtn').addEventListener('click', (e) => { e.stopPropagation(); hideAllPanels(); settingsMainOptions.style.display = 'block'; });
-          document.getElementById('settingsAdvancedBackBtn').addEventListener('click', (e) => { e.stopPropagation(); hideAllPanels(); settingsQualityOptions.style.display = 'block'; });
+          document.getElementById('settingsAdvancedBackBtn').addEventListener('click', (e) => { e.stopPropagation(); hideAllPanels(); settingsMainOptions.style.display = 'block'; });
 
           // Speed options
           const speedLabels = { '0.5':'0.5x', '0.75':'0.75x', '1':'Normal', '1.25':'1.25x', '1.5':'1.5x', '2':'2x' };
@@ -941,41 +992,12 @@ export default function LecturePlayerScreen() {
             });
           });
 
-          // Quality Category: Auto
-          document.getElementById('qualityCatAuto').addEventListener('click', (e) => {
-            e.stopPropagation();
-            setActiveCat('qualityCatAuto');
-            applyQuality('auto', 'Auto');
-          });
-
-          // Quality Category: Higher picture quality
-          document.getElementById('qualityCatHigh').addEventListener('click', (e) => {
-            e.stopPropagation();
-            setActiveCat('qualityCatHigh');
-            applyQuality('hd1080', 'High');
-          });
-
-          // Quality Category: Data saver
-          document.getElementById('qualityCatLow').addEventListener('click', (e) => {
-            e.stopPropagation();
-            setActiveCat('qualityCatLow');
-            applyQuality('small', 'Data saver');
-          });
-
-          // Quality Category: Advanced → open Tier 3
-          document.getElementById('qualityCatAdvanced').addEventListener('click', (e) => {
-            e.stopPropagation();
-            hideAllPanels();
-            settingsAdvancedQuality.style.display = 'block';
-          });
-
           // Tier 3: Advanced specific resolution buttons
           document.querySelectorAll('.option-quality').forEach(item => {
             item.addEventListener('click', (e) => {
               e.stopPropagation();
               const qualityVal = e.currentTarget.dataset.quality;
               const label = e.currentTarget.dataset.label || qualityVal;
-              setActiveCat('qualityCatAdvanced');
               applyQuality(qualityVal, label);
             });
           });
@@ -1272,8 +1294,7 @@ export default function LecturePlayerScreen() {
                 </TouchableOpacity>
               ))}
             </ScrollView>
-          )}
-        </View>
+          )}        </View>
       )}
     </SafeAreaView>
   );

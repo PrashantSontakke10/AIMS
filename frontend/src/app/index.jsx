@@ -23,14 +23,14 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     setError("");
-    const mobileRegex = /^\+?[0-9]{10,15}$/;
-    if (!mobileRegex.test(mobile.trim())) {
-      setError("Invalid mobile number. Must be 10-15 digits.");
+    const digitsOnly = mobile.replace(/\D/g, "");
+    if (digitsOnly.length !== 10) {
+      setError("Mobile number must be exactly 10 digits.");
       return;
     }
 
     try {
-      await login(mobile.trim(), loginMode);
+      await login(`+91${digitsOnly}`, loginMode);
     } catch (e) {
       console.error(e);
       if (e.response && e.response.data && e.response.data.message) {
@@ -43,9 +43,9 @@ export default function LoginScreen() {
 
   const prefillDemoMobile = () => {
     if (loginMode === "admin") {
-      setMobile("+919999999999");
+      setMobile("9999999999");
     } else {
-      setMobile("+918888888888");
+      setMobile("8888888888");
     }
     setError("");
   };
@@ -113,19 +113,28 @@ export default function LoginScreen() {
 
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>Mobile Number</Text>
-            <TextInput
-              style={[styles.input, error ? styles.inputError : null]}
-              placeholder={loginMode === "admin" ? "+919999999999" : "+918888888888"}
-              placeholderTextColor="#A0AEC0"
-              keyboardType="phone-pad"
-              value={mobile}
-              onChangeText={(text) => {
-                setMobile(text);
-                if (error) setError("");
-              }}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
+            <View style={[styles.phoneInputRow, error ? styles.phoneInputRowError : null]}>
+              <View style={styles.prefixContainer}>
+                <Text style={styles.prefixText}>+91</Text>
+              </View>
+              <TextInput
+                style={styles.phoneInput}
+                placeholder={loginMode === "admin" ? "99999 99999" : "88888 88888"}
+                placeholderTextColor="#A0AEC0"
+                keyboardType="phone-pad"
+                value={mobile}
+                onChangeText={(text) => {
+                  const cleaned = text.replace(/\D/g, "");
+                  if (cleaned.length <= 10) {
+                    setMobile(cleaned);
+                  }
+                  if (error) setError("");
+                }}
+                maxLength={10}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+            </View>
           </View>
 
           <TouchableOpacity
@@ -249,17 +258,38 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 1,
   },
-  input: {
+  phoneInputRow: {
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
     borderColor: Colors.border,
     borderRadius: Spacing.two,
-    padding: 14,
+    backgroundColor: Colors.offWhite,
+    overflow: "hidden",
+  },
+  phoneInputRowError: {
+    borderColor: Colors.blocked,
+  },
+  prefixContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRightWidth: 1,
+    borderRightColor: Colors.border,
+    backgroundColor: "#EDF2F7",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  prefixText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: Colors.navyPrimary,
+  },
+  phoneInput: {
+    flex: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     fontSize: 16,
     color: Colors.text,
-    backgroundColor: Colors.offWhite,
-  },
-  inputError: {
-    borderColor: Colors.blocked,
   },
   errorText: {
     color: Colors.blocked,
