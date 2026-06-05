@@ -10,6 +10,7 @@ jspm_packages/
 .env.production.local
 .env.backup
 *.env
+service-account.json
 
 # Logs
 logs
