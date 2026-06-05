@@ -1,23 +1,25 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { BookOpen, Download, User } from 'lucide-react-native';
-import { Colors } from '../../constants/theme';
+import { useAppTheme } from '../../context/ThemeContext';
 
 export default function StudentLayout() {
+  const { colors } = useAppTheme();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: Colors.navyPrimary,
-          borderTopColor: Colors.navySecondary,
+          backgroundColor: colors.background,
+          borderTopColor: colors.border,
           borderTopWidth: 1,
           height: 65,
           paddingBottom: 10,
           paddingTop: 8,
         },
-        tabBarActiveTintColor: Colors.textLight,
-        tabBarInactiveTintColor: 'rgba(255, 255, 255, 0.6)',
+        tabBarActiveTintColor: colors.accentBlue,
+        tabBarInactiveTintColor: colors.textSecondary,
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: '600',
@@ -69,4 +71,3 @@ export default function StudentLayout() {
     </Tabs>
   );
 }
-

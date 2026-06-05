@@ -1,4 +1,5 @@
 import Course from "./course.model.js";
+import User from "../auth/auth.model.js";
 
 // POST /api/courses
 export const createCourse = async (req, res) => {
@@ -45,6 +46,24 @@ export const createCourse = async (req, res) => {
 // GET /api/courses
 export const getCourses = async (req, res) => {
   try {
+    const isFreeTrial = process.env.FREE_TRIAL_MODE !== "false"; // Default to true for free trial
+
+    if (req.user && req.user.role === "student" && !isFreeTrial) {
+      const student = await User.findById(req.user.id);
+      if (!student) {
+        return res.status(404).json({
+          message: "Student user not found",
+        });
+      }
+
+      // Filter courses to only show assigned ones
+      const courses = await Course.find({
+        _id: { $in: student.assignedCourses || [] }
+      });
+      return res.status(200).json(courses);
+    }
+
+    // Default: return all courses
     const courses = await Course.find();
     return res.status(200).json(courses);
   } catch (error) {

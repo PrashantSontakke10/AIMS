@@ -8,62 +8,64 @@ import {
   Image,
 } from "react-native";
 import { useAuth } from "../context/AuthContext";
+import { useAppTheme } from "../context/ThemeContext";
 import { Colors, Spacing } from "../constants/theme";
 
 export default function PendingScreen() {
   const { user, logout } = useAuth();
+  const { colors } = useAppTheme();
 
   const isBlocked = user?.status === "blocked";
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.offWhite }]}>
       <View style={styles.header}>
         <Image
           source={require("../../assets/images/logo.jpg")}
           style={styles.logoImage}
           resizeMode="contain"
         />
-        <Text style={styles.appTitle}>AIM Institute</Text>
+        <Text style={[styles.appTitle, { color: colors.text }]}>AIM Institute</Text>
       </View>
 
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: colors.background, borderColor: colors.border }, colors.cardShadow]}>
         <View
           style={[
             styles.statusIconBadge,
-            { backgroundColor: isBlocked ? Colors.blocked : Colors.pending },
+            { backgroundColor: isBlocked ? colors.blocked : colors.pending },
           ]}
         >
           <Text style={styles.statusIconText}>!</Text>
         </View>
 
-        <Text style={styles.cardTitle}>
+        <Text style={[styles.cardTitle, { color: colors.text }]}>
           {isBlocked ? "Account Blocked" : "Approval Pending"}
         </Text>
 
-        <Text style={styles.mobileText}>Mobile: {user?.mobile}</Text>
+        <Text style={[styles.mobileText, { color: colors.textSecondary }]}>Mobile: {user?.mobile}</Text>
 
-        <Text style={styles.cardDescription}>
+        <Text style={[styles.cardDescription, { color: colors.textSecondary }]}>
           {isBlocked
             ? "Your account has been blocked by the administrator. You can no longer access dashboard materials. Please reach out to customer support."
             : "Your student registration has been received successfully! Before you can view lessons and course materials, an administrator must approve your account and assign your courses."}
         </Text>
 
         <View style={styles.statusBox}>
-          <Text style={styles.statusBoxLabel}>Status:</Text>
+          <Text style={[styles.statusBoxLabel, { color: colors.text }]}>Status:</Text>
           <View
             style={[
               styles.badge,
               {
                 backgroundColor: isBlocked
-                  ? `${Colors.blocked}15`
-                  : `${Colors.pending}15`,
+                  ? `${colors.blocked}15`
+                  : `${colors.pending}15`,
               },
             ]}
           >
             <Text
               style={[
                 styles.badgeText,
-                { color: isBlocked ? Colors.blocked : Colors.pending },
+                { color: isBlocked ? colors.blocked : colors.pending },
               ]}
             >
               {user?.status ? user.status.toUpperCase() : "PENDING"}
@@ -72,16 +74,16 @@ export default function PendingScreen() {
         </View>
 
         <TouchableOpacity
-          style={styles.logoutButton}
+          style={[styles.logoutButton, { borderColor: colors.navyPrimary }]}
           onPress={logout}
           activeOpacity={0.8}
         >
-          <Text style={styles.logoutButtonText}>Return to Login</Text>
+          <Text style={[styles.logoutButtonText, { color: colors.navyPrimary }]}>Return to Login</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>AIM Institute Learning Platform</Text>
+        <Text style={[styles.footerText, { color: colors.textSecondary }]}>AIM Institute Learning Platform</Text>
       </View>
     </ScrollView>
   );
@@ -92,7 +94,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: "center",
     padding: Spacing.four,
-    backgroundColor: Colors.offWhite,
   },
   header: {
     alignItems: "center",
@@ -107,14 +108,12 @@ const styles = StyleSheet.create({
   appTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: Colors.text,
   },
   card: {
-    backgroundColor: Colors.background,
+    borderWidth: 1,
     borderRadius: Spacing.three,
     padding: Spacing.four,
     alignItems: "center",
-    ...Colors.cardShadow,
   },
   statusIconBadge: {
     width: 60,

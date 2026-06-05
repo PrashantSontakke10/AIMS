@@ -13,9 +13,13 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import api from "../../../services/api";
-import { Colors, Spacing } from "../../../constants/theme";
+import { Spacing } from "../../../constants/theme";
+import { useAppTheme } from "../../../context/ThemeContext";
 
 export default function CoursesList() {
+  const { colors } = useAppTheme();
+  const styles = getStyles(colors);
+  
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
@@ -28,7 +32,7 @@ export default function CoursesList() {
   const fetchCourses = async () => {
     try {
       const response = await api.get("/courses");
-      setCourses(response.data);
+      setCourses(response.data || []);
     } catch (e) {
       console.error("Error fetching courses:", e);
     } finally {
@@ -77,7 +81,7 @@ export default function CoursesList() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.navyPrimary} />
+        <ActivityIndicator size="large" color={colors.navyPrimary} />
       </View>
     );
   }
@@ -85,9 +89,9 @@ export default function CoursesList() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View>
+        <View style={{ flex: 1, marginRight: Spacing.two }}>
           <Text style={styles.headerTitle}>Course Workspace</Text>
-          <Text style={styles.headerSubtitle}>
+          <Text style={styles.headerSubtitle} numberOfLines={1}>
             Select a course to build chapters and materials.
           </Text>
         </View>
@@ -116,7 +120,7 @@ export default function CoursesList() {
             activeOpacity={0.8}
           >
             <View style={styles.courseHeader}>
-              <Text style={styles.courseTitle}>{item.title}</Text>
+              <Text style={styles.courseTitle} numberOfLines={1}>{item.title}</Text>
               {item.code ? (
                 <View style={styles.codeBadge}>
                   <Text style={styles.codeText}>{item.code}</Text>
@@ -170,7 +174,7 @@ export default function CoursesList() {
                 <TextInput
                   style={styles.input}
                   placeholder="e.g. Grade 10 Mathematics"
-                  placeholderTextColor="#A0AEC0"
+                  placeholderTextColor={colors.textSecondary}
                   value={title}
                   onChangeText={setTitle}
                 />
@@ -181,7 +185,7 @@ export default function CoursesList() {
                 <TextInput
                   style={styles.input}
                   placeholder="e.g. MATH10"
-                  placeholderTextColor="#A0AEC0"
+                  placeholderTextColor={colors.textSecondary}
                   value={code}
                   onChangeText={setCode}
                   autoCapitalize="characters"
@@ -193,7 +197,7 @@ export default function CoursesList() {
                 <TextInput
                   style={[styles.input, styles.textArea]}
                   placeholder="Enter details about this course..."
-                  placeholderTextColor="#A0AEC0"
+                  placeholderTextColor={colors.textSecondary}
                   multiline
                   numberOfLines={4}
                   value={description}
@@ -208,7 +212,7 @@ export default function CoursesList() {
                 activeOpacity={0.8}
               >
                 {createLoading ? (
-                  <ActivityIndicator color={Colors.textLight} />
+                  <ActivityIndicator color={colors.textLight} />
                 ) : (
                   <Text style={styles.submitBtnText}>Create Course</Text>
                 )}
@@ -221,27 +225,28 @@ export default function CoursesList() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.offWhite,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: Colors.offWhite,
+    backgroundColor: colors.offWhite,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     padding: Spacing.four,
-    backgroundColor: Colors.navyPrimary,
+    backgroundColor: colors.navyPrimary,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: Colors.textLight,
+    color: colors.textLight,
   },
   headerSubtitle: {
     fontSize: 12,
@@ -249,13 +254,13 @@ const styles = StyleSheet.create({
     marginTop: Spacing.half,
   },
   createBtn: {
-    backgroundColor: Colors.accentBlue,
+    backgroundColor: colors.accentBlue,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
     borderRadius: Spacing.one,
   },
   createBtnText: {
-    color: Colors.textLight,
+    color: colors.textLight,
     fontWeight: "bold",
     fontSize: 13,
   },
@@ -264,10 +269,12 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
   },
   courseCard: {
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
     borderRadius: Spacing.two,
     padding: Spacing.four,
-    ...Colors.cardShadow,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...colors.cardShadow,
   },
   courseHeader: {
     flexDirection: "row",
@@ -278,11 +285,11 @@ const styles = StyleSheet.create({
   courseTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: Colors.text,
+    color: colors.text,
     flex: 1,
   },
   codeBadge: {
-    backgroundColor: Colors.accentLight,
+    backgroundColor: colors.accentLight,
     paddingHorizontal: Spacing.two,
     paddingVertical: Spacing.half,
     borderRadius: Spacing.one,
@@ -290,23 +297,23 @@ const styles = StyleSheet.create({
   codeText: {
     fontSize: 11,
     fontWeight: "bold",
-    color: Colors.accentBlue,
+    color: colors.accentBlue,
   },
   courseDesc: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     lineHeight: 18,
     marginBottom: Spacing.three,
   },
   cardFooter: {
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
+    borderTopColor: colors.border,
     paddingTop: Spacing.two,
     alignItems: "flex-end",
   },
   viewCourseText: {
     fontSize: 12,
-    color: Colors.navySecondary,
+    color: colors.accentBlue,
     fontWeight: "700",
   },
   emptyContainer: {
@@ -315,19 +322,20 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
   emptyText: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontSize: 15,
     marginBottom: Spacing.four,
   },
   emptyBtn: {
     borderWidth: 1,
-    borderColor: Colors.navyPrimary,
+    borderColor: colors.navyPrimary,
     borderRadius: Spacing.two,
     paddingVertical: Spacing.two,
     paddingHorizontal: Spacing.four,
+    backgroundColor: colors.background,
   },
   emptyBtnText: {
-    color: Colors.navyPrimary,
+    color: colors.navyPrimary,
     fontWeight: "bold",
   },
   modalOverlay: {
@@ -336,7 +344,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
     borderTopLeftRadius: Spacing.four,
     borderTopRightRadius: Spacing.four,
     padding: Spacing.four,
@@ -347,20 +355,20 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: colors.border,
     paddingBottom: Spacing.two,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: Colors.text,
+    color: colors.text,
   },
   closeBtn: {
     padding: Spacing.one,
   },
   closeBtnText: {
     fontSize: 20,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
   },
   modalBody: {
     paddingVertical: Spacing.three,
@@ -371,31 +379,31 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 12,
     fontWeight: "600",
-    color: Colors.text,
+    color: colors.text,
     marginBottom: Spacing.one,
   },
   input: {
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border,
     borderRadius: Spacing.one,
     padding: Spacing.two,
     fontSize: 15,
-    color: Colors.text,
-    backgroundColor: Colors.offWhite,
+    color: colors.text,
+    backgroundColor: colors.offWhite,
   },
   textArea: {
     height: 80,
     textAlignVertical: "top",
   },
   submitBtn: {
-    backgroundColor: Colors.navyPrimary,
+    backgroundColor: colors.navyPrimary,
     borderRadius: Spacing.two,
     padding: Spacing.three,
     alignItems: "center",
     marginTop: Spacing.two,
   },
   submitBtnText: {
-    color: Colors.textLight,
+    color: colors.textLight,
     fontWeight: "bold",
     fontSize: 16,
   },

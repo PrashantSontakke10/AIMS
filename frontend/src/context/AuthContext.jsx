@@ -26,14 +26,25 @@ export const AuthProvider = ({ children }) => {
     loadStoredAuth();
   }, []);
 
-  const login = async (mobile) => {
+  const login = async (mobile, role, extraDetails = {}) => {
     setLoading(true);
     try {
-      const response = await api.post("/api/auth/login", { mobile });
+      const payload = { mobile, role, ...extraDetails };
+      const response = await api.post("/api/auth/login", payload);
+      
+      if (response.data.requiresRegistration) {
+        return response.data;
+      }
+      
       const { accessToken, refreshToken, user: loggedUser } = response.data;
       const userData = {
         id: loggedUser.id,
         mobile: loggedUser.mobile,
+        name: loggedUser.name,
+        firstName: loggedUser.firstName,
+        lastName: loggedUser.lastName,
+        address: loggedUser.address,
+        email: loggedUser.email,
         role: loggedUser.role,
         status: loggedUser.status,
         assignedCourses: loggedUser.assignedCourses || [],
@@ -70,11 +81,6 @@ export const AuthProvider = ({ children }) => {
   const refreshUser = async () => {
     if (!user) return;
     try {
-      // Just fetch the students list or similar to verify token, or we can check the status.
-      // Wait, there is no direct "get me" endpoint, but we can verify status by fetching courses or calling an API.
-      // We can also check if the user role/status has been updated. Let's make a call to getStudents for checking if they're admin,
-      // or we can just fetch all courses to check token validity.
-      // Let's assume we can fetch user profile or get courses.
       await api.get("/courses");
     } catch (error) {
       console.error("Failed to verify token validity:", error);
@@ -82,8 +88,42 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateProfile = async (updates) => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      const response = await api.post("/api/auth/update-profile", {
+        userId: user.id,
+        ...updates
+      });
+      const updatedUser = response.data.user;
+      const userData = {
+        id: updatedUser.id,
+        mobile: updatedUser.mobile,
+        name: updatedUser.name,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        address: updatedUser.address,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        status: updatedUser.status,
+        assignedCourses: updatedUser.assignedCourses || [],
+      };
+      
+      const token = await tokenStorage.getAccessToken();
+      const rtoken = await tokenStorage.getRefreshToken();
+      await tokenStorage.saveTokens(token, rtoken, userData);
+      setUser(userData);
+      return userData;
+    } catch (error) {
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, refreshUser, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

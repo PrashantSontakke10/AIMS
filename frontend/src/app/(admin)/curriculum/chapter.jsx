@@ -17,7 +17,8 @@ import * as DocumentPicker from "expo-document-picker";
 import * as WebBrowser from "expo-web-browser";
 import { WebView } from "react-native-webview";
 import api from "../../../services/api";
-import { Colors, Spacing } from "../../../constants/theme";
+import { Spacing } from "../../../constants/theme";
+import { useAppTheme } from "../../../context/ThemeContext";
 
 const VIDEO_PROTECTION_JS = `
   (function() {
@@ -85,6 +86,9 @@ const VIDEO_PROTECTION_JS = `
 `;
 
 export default function ChapterDetail() {
+  const { colors } = useAppTheme();
+  const styles = getStyles(colors);
+  
   const { chapterId, chapterTitle, courseTitle } = useLocalSearchParams();
   const [activeTab, setActiveTab] = useState("lectures");
   const [loading, setLoading] = useState(true);
@@ -120,8 +124,8 @@ export default function ChapterDetail() {
         api.get(`/lectures/${chapterId}`),
         api.get(`/notes/${chapterId}`),
       ]);
-      setLectures(lecturesRes.data);
-      setNotes(notesRes.data);
+      setLectures(lecturesRes.data || []);
+      setNotes(notesRes.data || []);
     } catch (e) {
       console.error("Error fetching chapter elements:", e);
     } finally {
@@ -221,7 +225,6 @@ export default function ChapterDetail() {
 
   const getEmbeddableUrl = (url) => {
     if (!url) return "";
-    // YouTube link transformation (uses privacy-safe youtube-nocookie embed)
     if (url.includes("youtube.com") || url.includes("youtu.be")) {
       let videoId = "";
       if (url.includes("youtu.be/")) {
@@ -233,7 +236,6 @@ export default function ChapterDetail() {
       }
       return `https://www.youtube-nocookie.com/embed/${videoId}?controls=1&modestbranding=1&rel=0&origin=https://youtube.com`;
     }
-    // Google Drive link transformation
     if (url.includes("drive.google.com")) {
       return url.replace("/view", "/preview").replace("/edit", "/preview");
     }
@@ -286,8 +288,6 @@ export default function ChapterDetail() {
       formData.append("description", noteDesc.trim());
       formData.append("chapterId", chapterId);
 
-      // Append files.
-      // Note: React Native FormData requires { uri, name, type } object structure for files
       selectedFiles.forEach((file) => {
         formData.append("files", {
           uri: file.uri,
@@ -302,10 +302,8 @@ export default function ChapterDetail() {
         },
       });
 
-      // The backend returns an array of created notes
-      setNotes((prev) => [...response.data, ...prev]);
+      setNotes((prev) => [...(response.data || []), ...prev]);
 
-      // Reset
       setNoteTitle("");
       setNoteDesc("");
       setSelectedFiles([]);
@@ -363,7 +361,7 @@ export default function ChapterDetail() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.navyPrimary} />
+        <ActivityIndicator size="large" color={colors.navyPrimary} />
       </View>
     );
   }
@@ -444,7 +442,7 @@ export default function ChapterDetail() {
             <View style={styles.itemCard}>
               <View style={styles.itemDetails}>
                 <Text style={styles.itemTitle}>{item.title}</Text>
-                <Text style={styles.itemDesc}>
+                <Text style={styles.itemDesc} numberOfLines={2}>
                   {item.description || "No description."}
                 </Text>
                 <TouchableOpacity
@@ -488,7 +486,7 @@ export default function ChapterDetail() {
             <View style={styles.itemCard}>
               <View style={styles.itemDetails}>
                 <Text style={styles.itemTitle}>{item.title}</Text>
-                <Text style={styles.itemDesc}>
+                <Text style={styles.itemDesc} numberOfLines={2}>
                   {item.description || "No description."}
                 </Text>
                 <View style={styles.linksRow}>
@@ -557,7 +555,7 @@ export default function ChapterDetail() {
                 <TextInput
                   style={styles.input}
                   placeholder="e.g. Lecture 1: Rational Numbers"
-                  placeholderTextColor="#A0AEC0"
+                  placeholderTextColor={colors.textSecondary}
                   value={lectureTitle}
                   onChangeText={setLectureTitle}
                 />
@@ -568,7 +566,7 @@ export default function ChapterDetail() {
                 <TextInput
                   style={styles.input}
                   placeholder="e.g. https://drive.google.com/..."
-                  placeholderTextColor="#A0AEC0"
+                  placeholderTextColor={colors.textSecondary}
                   value={lectureVideoUrl}
                   onChangeText={setLectureVideoUrl}
                   autoCapitalize="none"
@@ -581,7 +579,7 @@ export default function ChapterDetail() {
                 <TextInput
                   style={[styles.input, styles.textArea]}
                   placeholder="Brief summary of lecture content..."
-                  placeholderTextColor="#A0AEC0"
+                  placeholderTextColor={colors.textSecondary}
                   multiline
                   numberOfLines={4}
                   value={lectureDesc}
@@ -596,7 +594,7 @@ export default function ChapterDetail() {
                 activeOpacity={0.8}
               >
                 {lectureSubmitLoading ? (
-                  <ActivityIndicator color={Colors.textLight} />
+                  <ActivityIndicator color={colors.textLight} />
                 ) : (
                   <Text style={styles.submitBtnText}>
                     {editingLecture ? "Save Lecture" : "Create Lecture"}
@@ -632,7 +630,7 @@ export default function ChapterDetail() {
                 <TextInput
                   style={styles.input}
                   placeholder="e.g. Chapter 1 Biology Handout"
-                  placeholderTextColor="#A0AEC0"
+                  placeholderTextColor={colors.textSecondary}
                   value={noteTitle}
                   onChangeText={setNoteTitle}
                 />
@@ -643,7 +641,7 @@ export default function ChapterDetail() {
                 <TextInput
                   style={[styles.input, styles.textArea]}
                   placeholder="e.g. Core concepts and definitions for Chapter 1"
-                  placeholderTextColor="#A0AEC0"
+                  placeholderTextColor={colors.textSecondary}
                   multiline
                   numberOfLines={4}
                   value={noteDesc}
@@ -691,7 +689,7 @@ export default function ChapterDetail() {
                 activeOpacity={0.8}
               >
                 {noteSubmitLoading ? (
-                  <ActivityIndicator color={Colors.textLight} />
+                  <ActivityIndicator color={colors.textLight} />
                 ) : (
                   <Text style={styles.submitBtnText}>
                     Upload & Sync to Drive
@@ -717,7 +715,7 @@ export default function ChapterDetail() {
                 style={styles.closeBtn}
                 onPress={() => setVideoPlayerVisible(false)}
               >
-                <Text style={styles.closeBtnText}>✕ Close</Text>
+                <Text style={[styles.closeBtnText, { color: colors.textLight }]}>✕ Close</Text>
               </TouchableOpacity>
             </View>
             <View style={styles.videoFrame}>
@@ -845,26 +843,27 @@ export default function ChapterDetail() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.offWhite,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: Colors.offWhite,
+    backgroundColor: colors.offWhite,
   },
   header: {
     padding: Spacing.four,
-    backgroundColor: Colors.navyPrimary,
+    backgroundColor: colors.navyPrimary,
   },
   backBtn: {
     alignSelf: "flex-start",
     marginBottom: Spacing.one,
   },
   backBtnText: {
-    color: Colors.textLight,
+    color: colors.textLight,
     fontWeight: "bold",
     fontSize: 14,
   },
@@ -877,14 +876,14 @@ const styles = StyleSheet.create({
   chapterHeaderTitle: {
     fontSize: 22,
     fontWeight: "bold",
-    color: Colors.textLight,
+    color: colors.textLight,
     marginTop: Spacing.half,
   },
   tabsRow: {
     flexDirection: "row",
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-    backgroundColor: Colors.background,
+    borderBottomColor: colors.border,
+    backgroundColor: colors.background,
   },
   tabButton: {
     flex: 1,
@@ -893,15 +892,15 @@ const styles = StyleSheet.create({
   },
   tabButtonActive: {
     borderBottomWidth: 3,
-    borderBottomColor: Colors.navyPrimary,
+    borderBottomColor: colors.navyPrimary,
   },
   tabButtonText: {
     fontSize: 13,
     fontWeight: "600",
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
   },
   tabButtonTextActive: {
-    color: Colors.navyPrimary,
+    color: colors.navyPrimary,
     fontWeight: "bold",
   },
   actionRow: {
@@ -910,23 +909,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: Spacing.four,
     paddingVertical: Spacing.three,
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: colors.border,
   },
   countIndicatorText: {
     fontSize: 14,
     fontWeight: "600",
-    color: Colors.text,
+    color: colors.text,
   },
   addBtn: {
-    backgroundColor: Colors.navySecondary,
+    backgroundColor: colors.accentBlue,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.one,
     borderRadius: Spacing.one,
   },
   addBtnText: {
-    color: Colors.textLight,
+    color: colors.textLight,
     fontWeight: "bold",
     fontSize: 13,
   },
@@ -936,11 +935,13 @@ const styles = StyleSheet.create({
   },
   itemCard: {
     flexDirection: "row",
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
     borderRadius: Spacing.two,
     padding: Spacing.four,
     justifyContent: "space-between",
-    ...Colors.cardShadow,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...colors.cardShadow,
   },
   itemDetails: {
     flex: 1,
@@ -949,12 +950,12 @@ const styles = StyleSheet.create({
   itemTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    color: Colors.text,
+    color: colors.text,
     marginBottom: Spacing.one,
   },
   itemDesc: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     lineHeight: 18,
     marginBottom: Spacing.two,
   },
@@ -964,7 +965,7 @@ const styles = StyleSheet.create({
   },
   actionLinkText: {
     fontSize: 13,
-    color: Colors.accentBlue,
+    color: colors.accentBlue,
     fontWeight: "700",
   },
   linksRow: {
@@ -979,9 +980,11 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: Colors.offWhite,
+    backgroundColor: colors.offWhite,
     justifyContent: "center",
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   actionEmoji: {
     fontSize: 14,
@@ -992,7 +995,7 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
   emptyText: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontSize: 14,
     textAlign: "center",
   },
@@ -1002,7 +1005,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
     borderTopLeftRadius: Spacing.four,
     borderTopRightRadius: Spacing.four,
     padding: Spacing.four,
@@ -1014,20 +1017,20 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: colors.border,
     paddingBottom: Spacing.two,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: Colors.text,
+    color: colors.text,
   },
   closeBtn: {
     padding: Spacing.one,
   },
   closeBtnText: {
     fontSize: 20,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
   },
   modalBody: {
     paddingVertical: Spacing.three,
@@ -1038,43 +1041,43 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 12,
     fontWeight: "600",
-    color: Colors.text,
+    color: colors.text,
     marginBottom: Spacing.one,
   },
   input: {
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border,
     borderRadius: Spacing.one,
     padding: Spacing.two,
     fontSize: 15,
-    color: Colors.text,
-    backgroundColor: Colors.offWhite,
+    color: colors.text,
+    backgroundColor: colors.offWhite,
   },
   textArea: {
     height: 80,
     textAlignVertical: "top",
   },
   fileSelectContainer: {
-    backgroundColor: Colors.offWhite,
+    backgroundColor: colors.offWhite,
     borderRadius: Spacing.two,
     padding: Spacing.three,
     marginBottom: Spacing.four,
     borderWidth: 1.5,
-    borderColor: Colors.border,
+    borderColor: colors.border,
     borderStyle: "dashed",
     alignItems: "center",
   },
   fileSelectBtn: {
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
     borderWidth: 1,
-    borderColor: Colors.navyPrimary,
+    borderColor: colors.navyPrimary,
     borderRadius: Spacing.one,
     paddingVertical: Spacing.two,
     paddingHorizontal: Spacing.four,
     marginBottom: Spacing.two,
   },
   fileSelectBtnText: {
-    color: Colors.navyPrimary,
+    color: colors.navyPrimary,
     fontSize: 13,
     fontWeight: "bold",
   },
@@ -1085,28 +1088,28 @@ const styles = StyleSheet.create({
   selectedHeading: {
     fontSize: 12,
     fontWeight: "bold",
-    color: Colors.text,
+    color: colors.text,
     marginBottom: Spacing.one,
   },
   fileNameText: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     marginBottom: Spacing.half,
   },
   noFilesSelectedText: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontStyle: "italic",
   },
   submitBtn: {
-    backgroundColor: Colors.navyPrimary,
+    backgroundColor: colors.navyPrimary,
     borderRadius: Spacing.two,
     padding: Spacing.three,
     alignItems: "center",
     marginTop: Spacing.two,
   },
   submitBtnText: {
-    color: Colors.textLight,
+    color: colors.textLight,
     fontWeight: "bold",
     fontSize: 16,
   },
@@ -1118,7 +1121,7 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
   },
   videoPlayerContent: {
-    backgroundColor: Colors.navyPrimary,
+    backgroundColor: colors.navyPrimary,
     borderRadius: Spacing.two,
     width: "100%",
     maxWidth: 800,
@@ -1131,12 +1134,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: Spacing.three,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.navySecondary,
+    borderBottomColor: colors.navySecondary,
   },
   videoPlayerTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    color: Colors.textLight,
+    color: colors.textLight,
   },
   videoFrame: {
     flex: 1,
