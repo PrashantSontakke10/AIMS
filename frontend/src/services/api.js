@@ -1,5 +1,6 @@
 import axios from "axios";
 import { Platform } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // We will write a small AsyncStorage fallback wrapper since AsyncStorage is standard and easy to use.
 // Let's check if AsyncStorage or SecureStore is available. For React Native, we can write a simple token storage.
@@ -44,49 +45,71 @@ export const api = axios.create({
   },
 });
 
-// Storage helper for tokens (In-memory + web localstorage fallback)
-let _accessToken = null;
-let _refreshToken = null;
-let _user = null;
-
+// Storage helper for tokens (AsyncStorage on mobile, localStorage on web)
 export const tokenStorage = {
   async getAccessToken() {
     if (Platform.OS === "web") {
       return localStorage.getItem("accessToken");
     }
-    return _accessToken;
+    try {
+      return await AsyncStorage.getItem("accessToken");
+    } catch (e) {
+      console.error("Error getting accessToken from AsyncStorage:", e);
+      return null;
+    }
   },
   async getRefreshToken() {
     if (Platform.OS === "web") {
       return localStorage.getItem("refreshToken");
     }
-    return _refreshToken;
+    try {
+      return await AsyncStorage.getItem("refreshToken");
+    } catch (e) {
+      console.error("Error getting refreshToken from AsyncStorage:", e);
+      return null;
+    }
   },
   async getUser() {
     if (Platform.OS === "web") {
       const u = localStorage.getItem("user");
       return u ? JSON.parse(u) : null;
     }
-    return _user;
+    try {
+      const u = await AsyncStorage.getItem("user");
+      return u ? JSON.parse(u) : null;
+    } catch (e) {
+      console.error("Error getting user from AsyncStorage:", e);
+      return null;
+    }
   },
   async saveTokens(accessToken, refreshToken, user) {
-    _accessToken = accessToken;
-    _refreshToken = refreshToken;
-    _user = user;
     if (Platform.OS === "web") {
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("refreshToken", refreshToken);
       localStorage.setItem("user", JSON.stringify(user));
+    } else {
+      try {
+        await AsyncStorage.setItem("accessToken", accessToken);
+        await AsyncStorage.setItem("refreshToken", refreshToken);
+        await AsyncStorage.setItem("user", JSON.stringify(user));
+      } catch (e) {
+        console.error("Error saving tokens to AsyncStorage:", e);
+      }
     }
   },
   async clear() {
-    _accessToken = null;
-    _refreshToken = null;
-    _user = null;
     if (Platform.OS === "web") {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
       localStorage.removeItem("user");
+    } else {
+      try {
+        await AsyncStorage.removeItem("accessToken");
+        await AsyncStorage.removeItem("refreshToken");
+        await AsyncStorage.removeItem("user");
+      } catch (e) {
+        console.error("Error clearing AsyncStorage:", e);
+      }
     }
   },
 };

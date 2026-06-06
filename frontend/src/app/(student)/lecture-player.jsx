@@ -1297,7 +1297,8 @@ export default function LecturePlayerScreen() {
                 </TouchableOpacity>
               ))}
             </ScrollView>
-          )}        </View>
+          )}
+        </View>
       )}
     </SafeAreaView>
   );
