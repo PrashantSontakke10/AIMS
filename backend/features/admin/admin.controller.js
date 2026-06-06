@@ -24,7 +24,17 @@ export const getStudents = async (req, res) => {
       query.status = status;
     }
 
-    const students = await User.find(query).populate("assignedCourses");
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit, 10) || 20));
+    const skip = (page - 1) * limit;
+
+    const students = await User.find(query)
+      .select("mobile name firstName lastName address email role status assignedCourses")
+      .populate("assignedCourses", "title description code")
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
     return res.status(200).json(students);
   } catch (error) {
     return res.status(500).json({

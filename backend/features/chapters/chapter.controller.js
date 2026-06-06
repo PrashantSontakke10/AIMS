@@ -71,15 +71,24 @@ export const getChaptersByCourse = async (req, res) => {
       });
     }
 
-    // Verify course exists
-    const course = await Course.findById(courseId);
-    if (!course) {
+    // Verify course exists (fast existence check)
+    const courseExists = await Course.exists({ _id: courseId });
+    if (!courseExists) {
       return res.status(404).json({
         message: "Course not found",
       });
     }
 
-    const chapters = await Chapter.find({ course: courseId });
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit, 10) || 20));
+    const skip = (page - 1) * limit;
+
+    const chapters = await Chapter.find({ course: courseId })
+      .select("title description course")
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
     return res.status(200).json(chapters);
   } catch (error) {
     return res.status(500).json({

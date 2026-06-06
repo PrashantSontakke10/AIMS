@@ -48,8 +48,13 @@ export const getCourses = async (req, res) => {
   try {
     const isFreeTrial = process.env.FREE_TRIAL_MODE !== "false"; // Default to true for free trial
 
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit, 10) || 10));
+    const skip = (page - 1) * limit;
+
+    let query = {};
     if (req.user && req.user.role === "student" && !isFreeTrial) {
-      const student = await User.findById(req.user.id);
+      const student = await User.findById(req.user.id).select("assignedCourses").lean();
       if (!student) {
         return res.status(404).json({
           message: "Student user not found",
@@ -57,14 +62,16 @@ export const getCourses = async (req, res) => {
       }
 
       // Filter courses to only show assigned ones
-      const courses = await Course.find({
-        _id: { $in: student.assignedCourses || [] }
-      });
-      return res.status(200).json(courses);
+      query = { _id: { $in: student.assignedCourses || [] } };
     }
 
-    // Default: return all courses
-    const courses = await Course.find();
+    // Return paginated courses, selecting only mandatory fields (lean for maximum speed)
+    const courses = await Course.find(query)
+      .select("title description code")
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
     return res.status(200).json(courses);
   } catch (error) {
     return res.status(500).json({

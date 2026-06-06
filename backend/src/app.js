@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import compression from "compression";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
@@ -12,6 +13,7 @@ import noteRoutes from "../features/notes/note.routes.js";
 
 const app = express();
 app.use(cors());
+app.use(compression());
 
 app.use(helmet());
 

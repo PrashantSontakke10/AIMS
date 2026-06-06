@@ -79,15 +79,24 @@ export const getLecturesByChapter = async (req, res) => {
       });
     }
 
-    // Verify chapter exists
-    const chapter = await Chapter.findById(chapterId);
-    if (!chapter) {
+    // Verify chapter exists (fast existence check)
+    const chapterExists = await Chapter.exists({ _id: chapterId });
+    if (!chapterExists) {
       return res.status(404).json({
         message: "Chapter not found",
       });
     }
 
-    const lectures = await Lecture.find({ chapter: chapterId });
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit, 10) || 20));
+    const skip = (page - 1) * limit;
+
+    const lectures = await Lecture.find({ chapter: chapterId })
+      .select("title description videoUrl chapter")
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
     return res.status(200).json(lectures);
   } catch (error) {
     return res.status(500).json({
