@@ -9,23 +9,30 @@ import { Platform } from "react-native";
 import Constants from "expo-constants";
 
 const getBaseUrl = () => {
+  // Use environment variable if specified, otherwise default to local development port
+  let url = process.env.EXPO_PUBLIC_API_URL || "http://localhost:5000";
+
   // Check if we are running in web mode
   if (Platform.OS === "web") {
-    return "http://localhost:5000";
+    return url;
   }
 
-  // Dynamically resolve the computer's local IP address (works on physical devices via Wi-Fi and emulators)
-  const hostUri = Constants.expoConfig?.hostUri;
-  if (hostUri) {
-    const ip = hostUri.split(":")[0];
-    return `http://${ip}:5000`;
+  // On mobile (Android/iOS), 'localhost' or '127.0.0.1' points to the device itself.
+  // We need to resolve the computer's actual local IP address so the app can communicate with the backend.
+  if (url.includes("localhost") || url.includes("127.0.0.1")) {
+    const hostUri = Constants.expoConfig?.hostUri;
+    if (hostUri) {
+      const ip = hostUri.split(":")[0];
+      return url.replace("localhost", ip).replace("127.0.0.1", ip);
+    }
+
+    // Fallbacks
+    if (Platform.OS === "android") {
+      return url.replace("localhost", "10.0.2.2").replace("127.0.0.1", "10.0.2.2"); // Android Emulator Loopback
+    }
   }
 
-  // Fallbacks
-  if (Platform.OS === "android") {
-    return "http://10.0.2.2:5000"; // Android Emulator Loopback
-  }
-  return "http://localhost:5000"; // iOS Simulator / fallback
+  return url;
 };
 
 export const API_BASE_URL = getBaseUrl();
