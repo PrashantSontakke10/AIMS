@@ -11,7 +11,7 @@ import Constants from "expo-constants";
 
 const getBaseUrl = () => {
   // Use environment variable if specified, otherwise default to local development port
-  let url = process.env.EXPO_PUBLIC_API_URL || "http://localhost:5000";
+  let url = process.env.EXPO_PUBLIC_API_URL || "https://aims-classes.onrender.com";
 
   // Check if we are running in web mode
   if (Platform.OS === "web") {
@@ -37,6 +37,7 @@ const getBaseUrl = () => {
 };
 
 export const API_BASE_URL = getBaseUrl();
+console.log("API Base URL initialized:", API_BASE_URL);
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
