@@ -15,12 +15,14 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import { Spacing } from "../../constants/theme";
 import { useAppTheme } from "../../context/ThemeContext";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function AdminLayout() {
   const { user, logout } = useAuth();
   const { width } = useWindowDimensions();
   const { colors } = useAppTheme();
-  const styles = getStyles(colors);
+  const insets = useSafeAreaInsets();
+  const styles = getStyles(colors, insets);
   const router = useRouter();
   const pathname = usePathname();
   const [profileMenuVisible, setProfileMenuVisible] = useState(false);
@@ -139,14 +141,6 @@ export default function AdminLayout() {
           </TouchableOpacity>
         );
       })}
-      <TouchableOpacity
-        style={styles.tabItem}
-        onPress={logout}
-        activeOpacity={0.7}
-      >
-        <Text style={styles.tabIcon}>🚪</Text>
-        <Text style={[styles.tabLabel, { color: colors.blocked }]}>Exit</Text>
-      </TouchableOpacity>
     </View>
   );
 
@@ -250,7 +244,7 @@ export default function AdminLayout() {
   );
 }
 
-const getStyles = (colors) => StyleSheet.create({
+const getStyles = (colors, insets) => StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: colors.navyPrimary,
@@ -354,7 +348,8 @@ const getStyles = (colors) => StyleSheet.create({
     fontSize: 13,
   },
   bottomTabs: {
-    height: 60,
+    height: 60 + (insets.bottom || 0),
+    paddingBottom: insets.bottom || 0,
     backgroundColor: colors.navyPrimary,
     flexDirection: "row",
     justifyContent: "space-around",
