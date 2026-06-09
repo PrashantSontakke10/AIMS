@@ -25,6 +25,7 @@ export default function StudentLayout() {
   const styles = getStyles(colors, insets);
   const router = useRouter();
   const pathname = usePathname();
+  const isVideoPlayer = pathname.includes("lecture-player");
   const [profileMenuVisible, setProfileMenuVisible] = useState(false);
 
   const isLargeScreen = width >= 768;
@@ -156,10 +157,10 @@ export default function StudentLayout() {
       <View
         style={[
           styles.container,
-          isLargeScreen ? styles.containerRow : styles.containerCol,
+          isLargeScreen && !isVideoPlayer ? styles.containerRow : styles.containerCol,
         ]}
       >
-        {isLargeScreen ? Sidebar() : null}
+        {isLargeScreen && !isVideoPlayer ? Sidebar() : null}
 
         <View style={styles.mainContent}>
 
@@ -169,7 +170,7 @@ export default function StudentLayout() {
           </View>
         </View>
 
-        {!isLargeScreen ? BottomTabs() : null}
+        {!isLargeScreen && !isVideoPlayer ? BottomTabs() : null}
       </View>
 
       <Modal
