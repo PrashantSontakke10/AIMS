@@ -1255,7 +1255,7 @@ export default function LecturePlayerScreen() {
         <View style={styles.materialsSection}>
           <View style={styles.sectionHeaderRow}>
             <View style={styles.sectionIconContainer}>
-              <FileText color={colors.textLight} size={18} />
+              <FileText color={colors.accentBlue} size={18} />
             </View>
             <Text style={styles.sectionTitle}>Handouts & Study Notes ({notes.length})</Text>
           </View>
@@ -1281,7 +1281,7 @@ export default function LecturePlayerScreen() {
                   activeOpacity={0.8}
                 >
                   <View style={styles.noteIconContainer}>
-                    <FileText color={colors.navyPrimary} size={22} />
+                    <FileText color={colors.accentBlue} size={22} />
                   </View>
                   <View style={styles.noteDetails}>
                     <Text style={styles.noteTitle} numberOfLines={1}>
@@ -1376,7 +1376,7 @@ const getStyles = (colors) => StyleSheet.create({
     ...colors.cardShadow,
   },
   descriptionTitle: {
-    color: colors.navyPrimary,
+    color: colors.text,
     fontWeight: 'bold',
     fontSize: 14,
     marginBottom: 4,
@@ -1397,13 +1397,13 @@ const getStyles = (colors) => StyleSheet.create({
     marginBottom: Spacing.three,
   },
   sectionIconContainer: {
-    backgroundColor: colors.navyPrimary,
+    backgroundColor: colors.accentLight,
     padding: 6,
     borderRadius: 8,
     marginRight: Spacing.two,
   },
   sectionTitle: {
-    color: colors.navyPrimary,
+    color: colors.text,
     fontWeight: 'bold',
     fontSize: 18,
   },
@@ -1429,7 +1429,7 @@ const getStyles = (colors) => StyleSheet.create({
     ...colors.cardShadow,
   },
   emptyNotesText: {
-    color: colors.navyPrimary,
+    color: colors.text,
     marginTop: Spacing.three,
     fontWeight: 'bold',
     fontSize: 16,
@@ -1479,14 +1479,12 @@ const getStyles = (colors) => StyleSheet.create({
     fontWeight: '600',
   },
   openText: {
-    color: colors.accentBlue,
+    color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingHorizontal: Spacing.three,
+    paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 16,
-    backgroundColor: colors.offWhite,
+    backgroundColor: colors.accentBlue,
   },
 });
