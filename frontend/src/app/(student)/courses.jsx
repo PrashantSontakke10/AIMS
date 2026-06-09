@@ -25,6 +25,7 @@ export default function CourseCatalogScreen() {
     { id: '6th', title: 'CLASS 6TH', label: '6', color: '#1B1464' },
     { id: '5th', title: 'CLASS 5TH', label: '5', color: '#0C2461' },
     { id: 'free', title: 'FREE STUDY\nMATERIALS', isFree: true, label: 'FREE', color: '#00A8FF' },
+    { id: 'all', title: 'ALL COURSES', isViewAll: true, label: 'ALL', color: '#1A5075' },
   ];
 
   const handleCategoryPress = (item) => {
@@ -382,6 +383,13 @@ const getStyles = (colors, insets, width) => StyleSheet.create({
   headerContainer: {
     backgroundColor: colors.offWhite,
   },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.text,
+    marginTop: Spacing.two,
+    marginBottom: Spacing.two,
+  },
   
   // 1. Teal Rounded Header Card
   headerCard: {
@@ -465,7 +473,7 @@ const getStyles = (colors, insets, width) => StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: colors.border,
-    height: 136,
+    height: 160,
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -488,31 +496,31 @@ const getStyles = (colors, insets, width) => StyleSheet.create({
   },
   noticeBadgeText: {
     color: '#FFFFFF',
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: 'bold',
     marginLeft: 3,
   },
   noticeTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '800',
     color: '#0C2461',
     marginTop: 6,
   },
   noticeSub: {
-    fontSize: 11,
+    fontSize: 13,
     color: colors.textSecondary,
     marginBottom: 6,
   },
   noticeButton: {
     backgroundColor: '#25D366',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     borderRadius: 20,
     alignSelf: 'flex-start',
   },
   noticeButtonText: {
     color: '#FFFFFF',
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: 'bold',
   },
   noticeBannerImage: {
@@ -550,7 +558,7 @@ const getStyles = (colors, insets, width) => StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background,
     paddingHorizontal: Spacing.three,
     height: 48,
     borderRadius: Spacing.two,
@@ -589,7 +597,7 @@ const getStyles = (colors, insets, width) => StyleSheet.create({
     width: '48%',
     borderRadius: Spacing.two,
     padding: Spacing.three,
-    minHeight: 110,
+    minHeight: 130,
     justifyContent: 'space-between',
     elevation: 3,
     shadowColor: '#000',
@@ -608,8 +616,9 @@ const getStyles = (colors, insets, width) => StyleSheet.create({
   categoryCardTitle: {
     color: '#FFFFFF',
     fontWeight: '800',
-    fontSize: 14,
+    fontSize: 15,
     letterSpacing: 0.5,
+    lineHeight: 20,
   },
   categoryCardFooter: {
     flexDirection: 'row',
@@ -617,16 +626,16 @@ const getStyles = (colors, insets, width) => StyleSheet.create({
     alignItems: 'center',
   },
   categoryCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
   },
   categoryCircleText: {
     fontWeight: '900',
-    fontSize: 15,
+    fontSize: 16,
   },
   categoryCircleEmoji: {
     fontSize: 18,
@@ -634,11 +643,11 @@ const getStyles = (colors, insets, width) => StyleSheet.create({
   categoryCircleBadge: {
     color: '#D63031',
     fontWeight: '950',
-    fontSize: 9,
+    fontSize: 10,
   },
   categoryArrow: {
     color: '#FFFFFF',
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
   },
 
@@ -737,7 +746,7 @@ const getStyles = (colors, insets, width) => StyleSheet.create({
   },
   courseCard: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background,
     borderRadius: Spacing.two,
     marginHorizontal: Spacing.four,
     marginBottom: Spacing.three,
@@ -761,7 +770,7 @@ const getStyles = (colors, insets, width) => StyleSheet.create({
     marginBottom: 4,
   },
   subjectBadge: {
-    backgroundColor: '#EEF5FF',
+    backgroundColor: colors.accentLight,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 4,
@@ -832,7 +841,7 @@ const getStyles = (colors, insets, width) => StyleSheet.create({
     textAlign: 'center',
   },
   expandToggleBtn: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: Spacing.two,

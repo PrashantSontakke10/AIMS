@@ -134,6 +134,9 @@ export default function AdminLayout() {
           >
             <Text style={styles.tabIcon}>{item.icon}</Text>
             <Text
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.7}
               style={[styles.tabLabel, isActive ? styles.tabLabelActive : null]}
             >
               {item.name}
@@ -358,6 +361,7 @@ const getStyles = (colors, insets) => StyleSheet.create({
     borderTopColor: colors.navySecondary,
   },
   tabItem: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -365,9 +369,12 @@ const getStyles = (colors, insets) => StyleSheet.create({
     fontSize: 20,
   },
   tabLabel: {
-    fontSize: 10,
+    width: "100%",
+    fontSize: 11,
     color: "rgba(255, 255, 255, 0.6)",
     marginTop: Spacing.half,
+    paddingHorizontal: 2,
+    textAlign: "center",
   },
   tabLabelActive: {
     color: colors.textLight,

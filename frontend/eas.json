@@ -1,0 +1,28 @@
+{
+  "cli": {
+    "version": ">= 9.0.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://aims-classes.onrender.com"
+      }
+    },
+    "production": {
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://aims-classes.onrender.com"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
