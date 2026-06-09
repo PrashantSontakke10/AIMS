@@ -31,8 +31,8 @@ export const Colors = {
   },
 
   // Flat properties for custom admin panel pages
-  navyPrimary: "#0B192C", // Deep Dark Navy
-  navySecondary: "#1E3E62", // Medium Navy
+  navyPrimary: "#1A5075", // Slate Teal Blue (matching screenshot)
+  navySecondary: "#2C5E8A", // Medium Slate Teal
   accentBlue: "#008DDA", // Electric Blue
   accentLight: "#EEF5FF", // Light Blue tint
   background: "#FFFFFF", // White
@@ -45,6 +45,17 @@ export const Colors = {
   active: "#10B981", // Green
   blocked: "#EF4444", // Red
   cardShadow: shadowStyle,
+
+  // Solid bright colors for My Subjects grid tiles matching screenshot
+  subjectColors: [
+    "#FF4B72", // Pink/Rose
+    "#4CAF50", // Green
+    "#9C27B0", // Purple
+    "#7E57C2", // Lavender
+    "#00BCD4", // Cyan
+    "#E91E63", // Magenta
+    "#FF9800", // Orange
+  ],
 };
 
 export const Spacing = {

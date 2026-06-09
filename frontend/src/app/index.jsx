@@ -154,7 +154,7 @@ export default function LoginScreen() {
               </View>
               <TextInput
                 style={[styles.phoneInput, { color: colors.text }]}
-                placeholder={loginMode === "admin" ? "99999 99999" : "88888 88888"}
+                placeholder={loginMode === "admin" ? "84829 54530" : "88888 88888"}
                 placeholderTextColor="#A0AEC0"
                 keyboardType="phone-pad"
                 value={mobile}

@@ -12,7 +12,6 @@ import {
   Alert,
   Image,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../context/AuthContext";
 import { Spacing } from "../../constants/theme";
 import { useAppTheme } from "../../context/ThemeContext";
@@ -24,7 +23,6 @@ export default function AdminLayout() {
   const styles = getStyles(colors);
   const router = useRouter();
   const pathname = usePathname();
-  const insets = useSafeAreaInsets();
   const [profileMenuVisible, setProfileMenuVisible] = useState(false);
 
   const isLargeScreen = width >= 768;
@@ -164,44 +162,17 @@ export default function AdminLayout() {
           isLargeScreen ? styles.containerRow : styles.containerCol,
         ]}
       >
-        {isLargeScreen ? <Sidebar /> : null}
+        {isLargeScreen ? Sidebar() : null}
 
         <View style={styles.mainContent}>
-          {!isLargeScreen ? (
-            <View
-              style={[
-                styles.mobileHeader,
-                {
-                  paddingTop: insets.top + Spacing.one,
-                  height: 56 + insets.top,
-                },
-              ]}
-            >
-              <TouchableOpacity
-                style={styles.profileAvatarBtn}
-                onPress={() => setProfileMenuVisible(true)}
-                activeOpacity={0.7}
-              >
-                <Image
-                  source={require("../../../assets/images/logo.jpg")}
-                  style={styles.logoImage}
-                  resizeMode="contain"
-                />
-              </TouchableOpacity>
-              <View style={styles.mobileHeaderTitleContainer}>
-                <Text style={styles.mobileHeaderTitle}>AIM Institute Admin</Text>
-                <Text style={styles.mobileHeaderSubtitle}>{user?.mobile}</Text>
-              </View>
-              <View style={{ width: 36 }} />
-            </View>
-          ) : null}
+
 
           <View style={styles.slotContainer}>
             <Slot />
           </View>
         </View>
 
-        {!isLargeScreen ? <BottomTabs /> : null}
+        {!isLargeScreen ? BottomTabs() : null}
       </View>
 
       <Modal

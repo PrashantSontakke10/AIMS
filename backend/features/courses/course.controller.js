@@ -11,12 +11,18 @@ export const createCourse = async (req, res) => {
       });
     }
 
-    const { title, description, code } = req.body;
+    const { title, description, code, grade } = req.body;
     
     const trimmedTitle = title ? title.trim() : "";
     if (!trimmedTitle) {
       return res.status(400).json({
         message: "Course title is required and cannot be empty",
+      });
+    }
+
+    if (grade && !["5th", "6th", "7th", "8th", "9th", "10th", "free", "all"].includes(grade.trim())) {
+      return res.status(400).json({
+        message: "Invalid grade selection",
       });
     }
 
@@ -33,7 +39,8 @@ export const createCourse = async (req, res) => {
     const course = await Course.create({ 
       title: trimmedTitle, 
       description: description ? description.trim() : undefined, 
-      code: trimmedCode 
+      code: trimmedCode,
+      grade: grade ? grade.trim() : undefined
     });
     return res.status(201).json(course);
   } catch (error) {
@@ -67,7 +74,7 @@ export const getCourses = async (req, res) => {
 
     // Return paginated courses, selecting only mandatory fields (lean for maximum speed)
     const courses = await Course.find(query)
-      .select("title description code")
+      .select("title description code grade")
       .skip(skip)
       .limit(limit)
       .lean();
