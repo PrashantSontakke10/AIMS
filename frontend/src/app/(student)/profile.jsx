@@ -203,9 +203,9 @@ export default function ProfileScreen() {
             </View>
           ) : (
             <View>
-              <View style={styles.detailsList}>
+              <View style={styles.detailsContainer}>
                 <View style={styles.detailsItem}>
-                  <Phone color={colors.textSecondary} size={18} />
+                  <Phone color={colors.accentBlue} size={18} />
                   <View style={styles.detailsTextContainer}>
                     <Text style={styles.detailsLabel}>Mobile Number</Text>
                     <Text style={styles.detailsValue}>{user?.mobile || 'N/A'}</Text>
@@ -213,7 +213,7 @@ export default function ProfileScreen() {
                 </View>
 
                 <View style={styles.detailsItem}>
-                  <Mail color={colors.textSecondary} size={18} />
+                  <Mail color={colors.accentBlue} size={18} />
                   <View style={styles.detailsTextContainer}>
                     <Text style={styles.detailsLabel}>Email Address</Text>
                     <Text style={styles.detailsValue}>{user?.email || 'Not Provided'}</Text>
@@ -221,7 +221,7 @@ export default function ProfileScreen() {
                 </View>
 
                 <View style={styles.detailsItem}>
-                  <MapPin color={colors.textSecondary} size={18} />
+                  <MapPin color={colors.accentBlue} size={18} />
                   <View style={styles.detailsTextContainer}>
                     <Text style={styles.detailsLabel}>Address</Text>
                     <Text style={styles.detailsValue}>{user?.address || 'Not Provided'}</Text>
@@ -229,7 +229,7 @@ export default function ProfileScreen() {
                 </View>
 
                 <View style={styles.detailsItem}>
-                  <UserCheck color={colors.textSecondary} size={18} />
+                  <UserCheck color={colors.active} size={18} />
                   <View style={styles.detailsTextContainer}>
                     <Text style={styles.detailsLabel}>Account Status</Text>
                     <Text style={[styles.detailsValue, styles.statusActive]}>
@@ -248,7 +248,7 @@ export default function ProfileScreen() {
                   </View>
                 </View>
                 
-                <View style={styles.detailsItem}>
+                <View style={[styles.detailsItem, { borderBottomWidth: 0 }]}>
                   <BookOpen color={colors.textSecondary} size={18} />
                   <View style={styles.detailsTextContainer}>
                     <Text style={styles.detailsLabel}>Enrolled Courses</Text>
@@ -286,13 +286,13 @@ export default function ProfileScreen() {
               onPress={() => selectThemeMode("light")}
               style={[
                 styles.themeBtn,
-                themeMode === "light" ? { backgroundColor: colors.accentBlue } : null
+                themeMode === "light" ? styles.themeBtnActive : null
               ]}
             >
-              <Sun color={themeMode === "light" ? "#FFFFFF" : colors.textSecondary} size={16} />
+              <Sun color={themeMode === "light" ? colors.accentBlue : colors.textSecondary} size={16} />
               <Text style={[
                 styles.themeBtnText,
-                themeMode === "light" ? { color: "#FFFFFF", fontWeight: "bold" } : { color: colors.textSecondary }
+                themeMode === "light" ? { color: colors.accentBlue, fontWeight: "bold" } : { color: colors.textSecondary }
               ]}>Light</Text>
             </TouchableOpacity>
 
@@ -300,13 +300,13 @@ export default function ProfileScreen() {
               onPress={() => selectThemeMode("dark")}
               style={[
                 styles.themeBtn,
-                themeMode === "dark" ? { backgroundColor: colors.accentBlue } : null
+                themeMode === "dark" ? styles.themeBtnActive : null
               ]}
             >
-              <Moon color={themeMode === "dark" ? "#FFFFFF" : colors.textSecondary} size={16} />
+              <Moon color={themeMode === "dark" ? colors.accentBlue : colors.textSecondary} size={16} />
               <Text style={[
                 styles.themeBtnText,
-                themeMode === "dark" ? { color: "#FFFFFF", fontWeight: "bold" } : { color: colors.textSecondary }
+                themeMode === "dark" ? { color: colors.accentBlue, fontWeight: "bold" } : { color: colors.textSecondary }
               ]}>Dark</Text>
             </TouchableOpacity>
 
@@ -314,13 +314,13 @@ export default function ProfileScreen() {
               onPress={() => selectThemeMode("system")}
               style={[
                 styles.themeBtn,
-                themeMode === "system" ? { backgroundColor: colors.accentBlue } : null
+                themeMode === "system" ? styles.themeBtnActive : null
               ]}
             >
-              <Settings color={themeMode === "system" ? "#FFFFFF" : colors.textSecondary} size={16} />
+              <Settings color={themeMode === "system" ? colors.accentBlue : colors.textSecondary} size={16} />
               <Text style={[
                 styles.themeBtnText,
-                themeMode === "system" ? { color: "#FFFFFF", fontWeight: "bold" } : { color: colors.textSecondary }
+                themeMode === "system" ? { color: colors.accentBlue, fontWeight: "bold" } : { color: colors.textSecondary }
               ]}>System</Text>
             </TouchableOpacity>
           </View>
@@ -330,7 +330,7 @@ export default function ProfileScreen() {
         <TouchableOpacity
           onPress={handleLogoutPress}
           style={styles.logoutBtn}
-          activeOpacity={0.8}
+          activeOpacity={0.85}
         >
           <LogOut color={colors.blocked} size={20} />
           <Text style={styles.logoutBtnText}>Sign Out Account</Text>
@@ -393,12 +393,20 @@ const getStyles = (colors, insets) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: Spacing.four,
+    backgroundColor: colors.offWhite,
+    padding: Spacing.three,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   profileAvatarLogo: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    borderWidth: 2,
+    borderColor: colors.border,
     marginRight: Spacing.three,
+    backgroundColor: '#FFFFFF',
   },
   profileTextContainer: {
     flex: 1,
@@ -413,20 +421,22 @@ const getStyles = (colors, insets) => StyleSheet.create({
     color: colors.textSecondary,
     marginTop: 2,
   },
-  detailsList: {
-    gap: Spacing.two,
-    marginTop: Spacing.one,
+  detailsContainer: {
+    backgroundColor: colors.offWhite,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: 'hidden',
+    marginBottom: Spacing.two,
   },
   detailsItem: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-    borderRadius: Spacing.two,
-    borderWidth: 1,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
     backgroundColor: colors.offWhite,
-    borderColor: colors.border,
-    marginBottom: Spacing.two,
   },
   detailsTextContainer: {
     marginLeft: Spacing.three,
@@ -455,11 +465,11 @@ const getStyles = (colors, insets) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
-    borderRadius: Spacing.two,
+    borderRadius: 12,
     borderColor: colors.accentBlue,
     paddingVertical: 12,
     marginTop: Spacing.three,
-    gap: Spacing.one,
+    gap: Spacing.two,
   },
   editBtnText: {
     fontWeight: 'bold',
@@ -541,9 +551,9 @@ const getStyles = (colors, insets) => StyleSheet.create({
   },
   themeSwitcher: {
     flexDirection: 'row',
-    borderRadius: Spacing.two,
-    borderWidth: 1,
+    borderRadius: 12,
     backgroundColor: colors.offWhite,
+    borderWidth: 1,
     borderColor: colors.border,
     padding: 4,
     gap: 4,
@@ -554,29 +564,38 @@ const getStyles = (colors, insets) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 10,
-    borderRadius: Spacing.one,
+    borderRadius: 8,
     gap: Spacing.one,
+  },
+  themeBtnActive: {
+    backgroundColor: colors.background,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   themeBtnText: {
     fontSize: 13,
     fontWeight: '500',
   },
   logoutBtn: {
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    backgroundColor: colors.isDark ? 'rgba(239, 68, 68, 0.15)' : '#FEF2F2',
     borderWidth: 1,
-    borderColor: 'rgba(239, 68, 68, 0.2)',
-    borderRadius: Spacing.three,
+    borderColor: colors.isDark ? 'rgba(239, 68, 68, 0.3)' : '#FEE2E2',
+    borderRadius: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
+    marginTop: Spacing.two,
     marginBottom: Spacing.six,
+    gap: Spacing.two,
   },
   logoutBtnText: {
     color: colors.blocked,
     fontWeight: 'bold',
     fontSize: 16,
-    marginLeft: Spacing.two,
   },
   errorText: {
     color: colors.blocked,
