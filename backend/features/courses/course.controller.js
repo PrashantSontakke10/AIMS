@@ -86,3 +86,40 @@ export const getCourses = async (req, res) => {
     });
   }
 };
+
+// DELETE /api/courses/:id
+export const deleteCourse = async (req, res) => {
+  try {
+    // Restrict access to administrators only
+    if (req.user.role !== "admin") {
+      return res.status(403).json({
+        message: "Access denied. Admins only.",
+      });
+    }
+
+    const { id } = req.params;
+
+    if (!id || id.length !== 24) {
+      return res.status(400).json({
+        message: "Invalid course ID format",
+      });
+    }
+
+    const course = await Course.findById(id);
+    if (!course) {
+      return res.status(404).json({
+        message: "Course not found",
+      });
+    }
+
+    await Course.deleteOne({ _id: id });
+
+    return res.status(200).json({
+      message: "Course deleted successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message,
+    });
+  }
+};

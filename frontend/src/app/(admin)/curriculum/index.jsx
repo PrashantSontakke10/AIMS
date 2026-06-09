@@ -92,10 +92,18 @@ export default function CoursesList() {
         {
           text: "Delete",
           style: "destructive",
-          onPress: () => {
-            // Mock delete from state (User will manually connect to backend later)
-            setCourses((prev) => prev.filter((c) => c._id !== courseId));
-            Alert.alert("Success", "Course deleted successfully (local only)");
+          onPress: async () => {
+            try {
+              await api.delete(`/courses/${courseId}`);
+              setCourses((prev) => prev.filter((c) => c._id !== courseId));
+              Alert.alert("Success", "Course deleted successfully");
+            } catch (e) {
+              console.error("Error deleting course:", e);
+              Alert.alert(
+                "Error",
+                e.response?.data?.message || "Failed to delete course"
+              );
+            }
           },
         },
       ]
