@@ -234,7 +234,7 @@ const getStyles = (colors, insets, width) => StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background,
     paddingHorizontal: Spacing.three,
     height: 48,
     borderRadius: Spacing.two,
@@ -263,7 +263,7 @@ const getStyles = (colors, insets, width) => StyleSheet.create({
   },
   courseCard: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background,
     borderRadius: Spacing.two,
     marginHorizontal: Spacing.four,
     marginBottom: Spacing.three,
@@ -287,7 +287,7 @@ const getStyles = (colors, insets, width) => StyleSheet.create({
     marginBottom: 4,
   },
   subjectBadge: {
-    backgroundColor: '#EEF5FF',
+    backgroundColor: colors.accentLight,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 4,

@@ -468,7 +468,7 @@ const getStyles = (colors, insets, width) => StyleSheet.create({
   },
   noticeCard: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background,
     borderRadius: Spacing.three,
     overflow: 'hidden',
     borderWidth: 1,
