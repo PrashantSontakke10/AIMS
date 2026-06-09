@@ -83,6 +83,25 @@ export default function CoursesList() {
     }
   };
 
+  const handleDeleteCourse = (courseId, courseTitle) => {
+    Alert.alert(
+      "Confirm Delete",
+      `Are you sure you want to delete this course: "${courseTitle}"?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => {
+            // Mock delete from state (User will manually connect to backend later)
+            setCourses((prev) => prev.filter((c) => c._id !== courseId));
+            Alert.alert("Success", "Course deleted successfully (local only)");
+          },
+        },
+      ]
+    );
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -143,6 +162,13 @@ export default function CoursesList() {
               {item.description || "No description provided."}
             </Text>
             <View style={styles.cardFooter}>
+              <TouchableOpacity
+                style={styles.deleteBtn}
+                onPress={() => handleDeleteCourse(item._id, item.title)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.deleteBtnText}>🗑️ Delete</Text>
+              </TouchableOpacity>
               <Text style={styles.viewCourseText}>Manage Curriculum ➡️</Text>
             </View>
           </TouchableOpacity>
@@ -352,7 +378,20 @@ const getStyles = (colors, insets) => StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border,
     paddingTop: Spacing.two,
-    alignItems: "flex-end",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  deleteBtn: {
+    paddingVertical: Spacing.one,
+    paddingHorizontal: Spacing.two,
+    borderRadius: Spacing.half,
+    backgroundColor: "rgba(239, 68, 68, 0.1)",
+  },
+  deleteBtnText: {
+    color: "#EF4444",
+    fontSize: 12,
+    fontWeight: "bold",
   },
   viewCourseText: {
     fontSize: 12,

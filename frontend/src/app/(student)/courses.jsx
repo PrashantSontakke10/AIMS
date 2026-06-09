@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, FlatList, TouchableOpacity, Image, TextInput, ActivityIndicator, StatusBar, useWindowDimensions, Linking, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Search, BookOpen, ChevronRight, Menu, Bell } from 'lucide-react-native';
+import { BookOpen, ChevronRight, Menu, Bell } from 'lucide-react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getCourses } from '../../services/studentApi';
@@ -18,14 +18,13 @@ export default function CourseCatalogScreen() {
   const router = useRouter();
   
   const categoriesList = [
-    { id: '5th', title: 'CLASS 5TH', label: '5', color: '#0C2461' },
-    { id: '6th', title: 'CLASS 6TH', label: '6', color: '#1B1464' },
-    { id: '7th', title: 'CLASS 7TH', label: '7', color: '#006266' },
-    { id: '8th', title: 'CLASS 8TH', label: '8', color: '#833471' },
-    { id: '9th', title: 'CLASS 9TH', label: '9', color: '#EE5A24' },
     { id: '10th', title: 'CLASS 10TH', label: '10', color: '#D63031' },
+    { id: '9th', title: 'CLASS 9TH', label: '9', color: '#EE5A24' },
+    { id: '8th', title: 'CLASS 8TH', label: '8', color: '#833471' },
+    { id: '7th', title: 'CLASS 7TH', label: '7', color: '#006266' },
+    { id: '6th', title: 'CLASS 6TH', label: '6', color: '#1B1464' },
+    { id: '5th', title: 'CLASS 5TH', label: '5', color: '#0C2461' },
     { id: 'free', title: 'FREE STUDY\nMATERIALS', isFree: true, label: 'FREE', color: '#00A8FF' },
-    { id: 'all', title: 'VIEW ALL\nCOURSES', isViewAll: true, label: 'ALL', color: '#57606F' },
   ];
 
   const handleCategoryPress = (item) => {
@@ -49,7 +48,6 @@ export default function CourseCatalogScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
 
   // Carousel slider state & configurations
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
@@ -213,30 +211,12 @@ export default function CourseCatalogScreen() {
     ))}
   </View>
 </View>
-      {/* 3. Search Bar */}
-      <View style={styles.searchSection}>
-        <View style={styles.searchBar}>
-          <Search color={colors.textSecondary} size={20} />
-          <TextInput
-            placeholder="Search classes or subjects..."
-            placeholderTextColor={colors.textSecondary}
-            style={styles.searchInput}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-          {searchQuery.trim() ? (
-            <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearSearchBtn}>
-              <Text style={styles.clearSearchText}>✕</Text>
-            </TouchableOpacity>
-          ) : null}
-        </View>
-      </View>
 
       {/* 4. "What are you looking for?" Grid Section */}
       <View style={styles.categoriesSection}>
         <Text style={styles.sectionTitle}>What are you looking for?</Text>
         <View style={styles.categoriesGrid}>
-          {(isExpanded ? categoriesList : categoriesList.slice(0, 4)).map((item) => (
+          {categoriesList.map((item) => (
             <TouchableOpacity
               key={item.id}
               style={[styles.categoryCard, { backgroundColor: item.color }]}
@@ -259,15 +239,6 @@ export default function CourseCatalogScreen() {
             </TouchableOpacity>
           ))}
         </View>
-        <TouchableOpacity
-          style={styles.expandToggleBtn}
-          activeOpacity={0.7}
-          onPress={() => setIsExpanded(!isExpanded)}
-        >
-          <Text style={styles.expandToggleText}>
-            {isExpanded ? 'View Less ▲' : 'View More ▼'}
-          </Text>
-        </TouchableOpacity>
       </View>
 
       {/* 5. Connect With Us Section */}
