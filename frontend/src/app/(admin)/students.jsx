@@ -14,10 +14,12 @@ import {
 import api from "../../services/api";
 import { Spacing } from "../../constants/theme";
 import { useAppTheme } from "../../context/ThemeContext";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function StudentsManagement() {
   const { colors } = useAppTheme();
-  const styles = getStyles(colors);
+  const insets = useSafeAreaInsets();
+  const styles = getStyles(colors, insets);
   
   const [students, setStudents] = useState([]);
   const [courses, setCourses] = useState([]);
@@ -552,7 +554,7 @@ export default function StudentsManagement() {
   );
 }
 
-const getStyles = (colors) => StyleSheet.create({
+const getStyles = (colors, insets) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.offWhite,
@@ -564,14 +566,19 @@ const getStyles = (colors) => StyleSheet.create({
     backgroundColor: colors.offWhite,
   },
   header: {
-    padding: Spacing.four,
     backgroundColor: colors.navyPrimary,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+    paddingTop: insets.top + Spacing.two,
+    paddingHorizontal: Spacing.four,
+    paddingBottom: Spacing.four,
+    ...colors.cardShadow,
   },
   title: {
     fontSize: 22,
     fontWeight: "bold",
     color: colors.textLight,
-    marginBottom: Spacing.three,
+    marginBottom: Spacing.two,
   },
   searchBar: {
     backgroundColor: colors.background,

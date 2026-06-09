@@ -3,12 +3,14 @@ import { StyleSheet, View, Text, TouchableOpacity, StatusBar, ScrollView, Alert,
 import { useAuth } from '../../context/AuthContext';
 import { useAppTheme } from '../../context/ThemeContext';
 import { User, LogOut, Phone, Shield, BookOpen, UserCheck, Edit3, Save, X, Mail, MapPin, Sun, Moon, Settings } from 'lucide-react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spacing } from '../../constants/theme';
 
 export default function ProfileScreen() {
   const { user, logout, updateProfile } = useAuth();
   const { themeMode, selectThemeMode, colors } = useAppTheme();
+  const insets = useSafeAreaInsets();
+  const styles = getStyles(colors, insets);
 
   const [isEditing, setIsEditing] = useState(false);
   const [firstName, setFirstName] = useState("");
@@ -68,16 +70,16 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.offWhite }]}>
-      <StatusBar barStyle={colors.isDark ? "light-content" : "dark-content"} backgroundColor={colors.navyPrimary} />
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor={colors.navyPrimary} />
 
-      {/* Header */}
-      <View style={[styles.header, { backgroundColor: colors.navyPrimary, borderBottomColor: colors.navySecondary }]}>
+      {/* Rounded Header Card */}
+      <View style={styles.header}>
         <View style={styles.headerRow}>
           <View style={styles.headerIconContainer}>
             <User color={colors.textLight} size={24} />
           </View>
-          <View>
+          <View style={styles.headerTextContainer}>
             <Text style={styles.headerTitle}>Profile</Text>
             <Text style={styles.headerSubtitle}>Manage your student account & preferences</Text>
           </View>
@@ -86,7 +88,7 @@ export default function ProfileScreen() {
 
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {/* Profile Card */}
-        <View style={[styles.profileCard, { backgroundColor: colors.background, borderColor: colors.border }, colors.cardShadow]}>
+        <View style={[styles.profileCard, colors.cardShadow]}>
           <View style={styles.profileHeader}>
             <Image
               source={require("../../../assets/images/logo.jpg")}
@@ -94,10 +96,10 @@ export default function ProfileScreen() {
               resizeMode="contain"
             />
             <View style={styles.profileTextContainer}>
-              <Text style={[styles.profileHeading, { color: colors.text }]}>
+              <Text style={styles.profileHeading}>
                 {user?.name || "Student User"}
               </Text>
-              <Text style={[styles.profileSubheading, { color: colors.textSecondary }]}>
+              <Text style={styles.profileSubheading}>
                 AIM Institute Learning Platform
               </Text>
             </View>
@@ -109,9 +111,9 @@ export default function ProfileScreen() {
           {isEditing ? (
             <View style={styles.formContainer}>
               <View style={styles.inputGroup}>
-                <Text style={[styles.inputLabel, { color: colors.text }]}>First Name</Text>
+                <Text style={styles.inputLabel}>First Name</Text>
                 <TextInput
-                  style={[styles.input, { color: colors.text, backgroundColor: colors.offWhite, borderColor: colors.border }]}
+                  style={styles.input}
                   placeholder="Enter first name"
                   placeholderTextColor="#A0AEC0"
                   value={firstName}
@@ -123,9 +125,9 @@ export default function ProfileScreen() {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={[styles.inputLabel, { color: colors.text }]}>Last Name</Text>
+                <Text style={styles.inputLabel}>Last Name</Text>
                 <TextInput
-                  style={[styles.input, { color: colors.text, backgroundColor: colors.offWhite, borderColor: colors.border }]}
+                  style={styles.input}
                   placeholder="Enter last name"
                   placeholderTextColor="#A0AEC0"
                   value={lastName}
@@ -137,9 +139,9 @@ export default function ProfileScreen() {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={[styles.inputLabel, { color: colors.text }]}>Email Address</Text>
+                <Text style={styles.inputLabel}>Email Address</Text>
                 <TextInput
-                  style={[styles.input, { color: colors.text, backgroundColor: colors.offWhite, borderColor: colors.border }]}
+                  style={styles.input}
                   placeholder="Enter email address"
                   placeholderTextColor="#A0AEC0"
                   keyboardType="email-address"
@@ -152,14 +154,11 @@ export default function ProfileScreen() {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={[styles.inputLabel, { color: colors.text }]}>Address</Text>
+                <Text style={styles.inputLabel}>Address</Text>
                 <TextInput
                   style={[
                     styles.input, 
                     { 
-                      color: colors.text, 
-                      backgroundColor: colors.offWhite, 
-                      borderColor: colors.border,
                       height: 80, 
                       textAlignVertical: "top" 
                     }
@@ -179,16 +178,16 @@ export default function ProfileScreen() {
               <View style={styles.buttonRow}>
                 <TouchableOpacity
                   onPress={() => setIsEditing(false)}
-                  style={[styles.btnCancel, { borderColor: colors.border }]}
+                  style={styles.btnCancel}
                   disabled={updating}
                 >
                   <X color={colors.textSecondary} size={18} />
-                  <Text style={[styles.btnCancelText, { color: colors.textSecondary }]}>Cancel</Text>
+                  <Text style={styles.btnCancelText}>Cancel</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   onPress={handleSave}
-                  style={[styles.btnSave, { backgroundColor: colors.accentBlue }]}
+                  style={styles.btnSave}
                   disabled={updating}
                 >
                   {updating ? (
@@ -205,31 +204,31 @@ export default function ProfileScreen() {
           ) : (
             <View>
               <View style={styles.detailsList}>
-                <View style={[styles.detailsItem, { backgroundColor: colors.offWhite, borderColor: colors.border }]}>
+                <View style={styles.detailsItem}>
                   <Phone color={colors.textSecondary} size={18} />
                   <View style={styles.detailsTextContainer}>
                     <Text style={styles.detailsLabel}>Mobile Number</Text>
-                    <Text style={[styles.detailsValue, { color: colors.text }]}>{user?.mobile || 'N/A'}</Text>
+                    <Text style={styles.detailsValue}>{user?.mobile || 'N/A'}</Text>
                   </View>
                 </View>
 
-                <View style={[styles.detailsItem, { backgroundColor: colors.offWhite, borderColor: colors.border }]}>
+                <View style={styles.detailsItem}>
                   <Mail color={colors.textSecondary} size={18} />
                   <View style={styles.detailsTextContainer}>
                     <Text style={styles.detailsLabel}>Email Address</Text>
-                    <Text style={[styles.detailsValue, { color: colors.text }]}>{user?.email || 'Not Provided'}</Text>
+                    <Text style={styles.detailsValue}>{user?.email || 'Not Provided'}</Text>
                   </View>
                 </View>
 
-                <View style={[styles.detailsItem, { backgroundColor: colors.offWhite, borderColor: colors.border }]}>
+                <View style={styles.detailsItem}>
                   <MapPin color={colors.textSecondary} size={18} />
                   <View style={styles.detailsTextContainer}>
                     <Text style={styles.detailsLabel}>Address</Text>
-                    <Text style={[styles.detailsValue, { color: colors.text }]}>{user?.address || 'Not Provided'}</Text>
+                    <Text style={styles.detailsValue}>{user?.address || 'Not Provided'}</Text>
                   </View>
                 </View>
 
-                <View style={[styles.detailsItem, { backgroundColor: colors.offWhite, borderColor: colors.border }]}>
+                <View style={styles.detailsItem}>
                   <UserCheck color={colors.textSecondary} size={18} />
                   <View style={styles.detailsTextContainer}>
                     <Text style={styles.detailsLabel}>Account Status</Text>
@@ -239,21 +238,21 @@ export default function ProfileScreen() {
                   </View>
                 </View>
 
-                <View style={[styles.detailsItem, { backgroundColor: colors.offWhite, borderColor: colors.border }]}>
+                <View style={styles.detailsItem}>
                   <Shield color={colors.textSecondary} size={18} />
                   <View style={styles.detailsTextContainer}>
                     <Text style={styles.detailsLabel}>Access Role</Text>
-                    <Text style={[styles.detailsValue, styles.uppercase, { color: colors.text }]}>
+                    <Text style={[styles.detailsValue, styles.uppercase]}>
                       {user?.role || 'Student'}
                     </Text>
                   </View>
                 </View>
                 
-                <View style={[styles.detailsItem, { backgroundColor: colors.offWhite, borderColor: colors.border }]}>
+                <View style={styles.detailsItem}>
                   <BookOpen color={colors.textSecondary} size={18} />
                   <View style={styles.detailsTextContainer}>
                     <Text style={styles.detailsLabel}>Enrolled Courses</Text>
-                    <Text style={[styles.detailsValue, { color: colors.text }]}>
+                    <Text style={styles.detailsValue}>
                       {user?.assignedCourses?.length || 0} Courses Enrolled
                     </Text>
                   </View>
@@ -262,27 +261,27 @@ export default function ProfileScreen() {
 
               <TouchableOpacity
                 onPress={() => setIsEditing(true)}
-                style={[styles.editBtn, { borderColor: colors.accentBlue }]}
+                style={styles.editBtn}
                 activeOpacity={0.8}
               >
                 <Edit3 color={colors.accentBlue} size={18} />
-                <Text style={[styles.editBtnText, { color: colors.accentBlue }]}>Edit Profile Details</Text>
+                <Text style={styles.editBtnText}>Edit Profile Details</Text>
               </TouchableOpacity>
             </View>
           )}
         </View>
 
         {/* Theme Settings Card */}
-        <View style={[styles.profileCard, { backgroundColor: colors.background, borderColor: colors.border }, colors.cardShadow]}>
+        <View style={[styles.profileCard, colors.cardShadow]}>
           <View style={styles.sectionHeader}>
             <Settings color={colors.text} size={20} />
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Preferences</Text>
+            <Text style={styles.sectionTitle}>Preferences</Text>
           </View>
-          <Text style={[styles.sectionDescription, { color: colors.textSecondary }]}>
+          <Text style={styles.sectionDescription}>
             Customize the look and feel of the AIM application.
           </Text>
 
-          <View style={[styles.themeSwitcher, { backgroundColor: colors.offWhite, borderColor: colors.border }]}>
+          <View style={styles.themeSwitcher}>
             <TouchableOpacity
               onPress={() => selectThemeMode("light")}
               style={[
@@ -337,18 +336,23 @@ export default function ProfileScreen() {
           <Text style={styles.logoutBtnText}>Sign Out Account</Text>
         </TouchableOpacity>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors, insets) => StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.offWhite,
   },
   header: {
+    backgroundColor: colors.navyPrimary,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+    paddingTop: insets.top + Spacing.two,
     paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.three,
-    borderBottomWidth: 1,
+    paddingBottom: Spacing.four,
+    ...colors.cardShadow,
   },
   headerRow: {
     flexDirection: 'row',
@@ -360,13 +364,16 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.two,
     marginRight: Spacing.three,
   },
+  headerTextContainer: {
+    flex: 1,
+  },
   headerTitle: {
-    color: '#FFFFFF',
+    color: colors.textLight,
     fontWeight: 'bold',
     fontSize: 20,
   },
   headerSubtitle: {
-    color: 'rgba(255, 255, 255, 0.6)',
+    color: 'rgba(255, 255, 255, 0.75)',
     fontSize: 12,
     marginTop: 2,
   },
@@ -375,6 +382,8 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.four,
   },
   profileCard: {
+    backgroundColor: colors.background,
+    borderColor: colors.border,
     borderWidth: 1,
     borderRadius: Spacing.three,
     padding: Spacing.four,
@@ -397,9 +406,11 @@ const styles = StyleSheet.create({
   profileHeading: {
     fontWeight: 'bold',
     fontSize: 18,
+    color: colors.text,
   },
   profileSubheading: {
     fontSize: 14,
+    color: colors.textSecondary,
     marginTop: 2,
   },
   detailsList: {
@@ -413,6 +424,8 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.two,
     borderRadius: Spacing.two,
     borderWidth: 1,
+    backgroundColor: colors.offWhite,
+    borderColor: colors.border,
     marginBottom: Spacing.two,
   },
   detailsTextContainer: {
@@ -420,17 +433,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   detailsLabel: {
-    color: '#64748B',
+    color: colors.textSecondary,
     fontSize: 11,
     fontWeight: '600',
   },
   detailsValue: {
     fontWeight: '600',
     fontSize: 14,
+    color: colors.text,
     marginTop: 2,
   },
   statusActive: {
-    color: '#10B981',
+    color: colors.active,
     fontWeight: 'bold',
   },
   uppercase: {
@@ -442,6 +456,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1.5,
     borderRadius: Spacing.two,
+    borderColor: colors.accentBlue,
     paddingVertical: 12,
     marginTop: Spacing.three,
     gap: Spacing.one,
@@ -449,6 +464,7 @@ const styles = StyleSheet.create({
   editBtnText: {
     fontWeight: 'bold',
     fontSize: 15,
+    color: colors.accentBlue,
   },
   formContainer: {
     gap: Spacing.three,
@@ -459,10 +475,14 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 12,
     fontWeight: '600',
+    color: colors.text,
   },
   input: {
     borderWidth: 1,
     borderRadius: Spacing.two,
+    color: colors.text,
+    backgroundColor: colors.offWhite,
+    borderColor: colors.border,
     paddingHorizontal: Spacing.three,
     paddingVertical: 10,
     fontSize: 15,
@@ -478,6 +498,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: Spacing.two,
     paddingVertical: 12,
     gap: Spacing.one,
@@ -485,12 +506,14 @@ const styles = StyleSheet.create({
   btnCancelText: {
     fontWeight: 'bold',
     fontSize: 15,
+    color: colors.textSecondary,
   },
   btnSave: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: colors.accentBlue,
     borderRadius: Spacing.two,
     paddingVertical: 12,
     gap: Spacing.one,
@@ -509,15 +532,19 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: colors.text,
   },
   sectionDescription: {
     fontSize: 13,
+    color: colors.textSecondary,
     marginBottom: Spacing.three,
   },
   themeSwitcher: {
     flexDirection: 'row',
     borderRadius: Spacing.two,
     borderWidth: 1,
+    backgroundColor: colors.offWhite,
+    borderColor: colors.border,
     padding: 4,
     gap: 4,
   },
@@ -546,13 +573,13 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.six,
   },
   logoutBtnText: {
-    color: '#EF4444',
+    color: colors.blocked,
     fontWeight: 'bold',
     fontSize: 16,
     marginLeft: Spacing.two,
   },
   errorText: {
-    color: '#EF4444',
+    color: colors.blocked,
     fontSize: 13,
     marginBottom: Spacing.three,
     fontWeight: '500',

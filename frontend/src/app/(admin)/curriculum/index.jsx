@@ -15,10 +15,12 @@ import { useRouter } from "expo-router";
 import api from "../../../services/api";
 import { Spacing } from "../../../constants/theme";
 import { useAppTheme } from "../../../context/ThemeContext";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function CoursesList() {
   const { colors } = useAppTheme();
-  const styles = getStyles(colors);
+  const insets = useSafeAreaInsets();
+  const styles = getStyles(colors, insets);
   
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,6 +28,7 @@ export default function CoursesList() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [code, setCode] = useState("");
+  const [grade, setGrade] = useState("all");
   const [createLoading, setCreateLoading] = useState(false);
   const router = useRouter();
 
@@ -55,6 +58,7 @@ export default function CoursesList() {
       const payload = {
         title: title.trim(),
         description: description.trim(),
+        grade: grade,
       };
       if (code.trim()) {
         payload.code = code.trim().toUpperCase();
@@ -66,6 +70,7 @@ export default function CoursesList() {
       setTitle("");
       setDescription("");
       setCode("");
+      setGrade("all");
       setModalVisible(false);
       Alert.alert("Success", "Course created successfully");
     } catch (e) {
@@ -121,11 +126,18 @@ export default function CoursesList() {
           >
             <View style={styles.courseHeader}>
               <Text style={styles.courseTitle} numberOfLines={1}>{item.title}</Text>
-              {item.code ? (
-                <View style={styles.codeBadge}>
-                  <Text style={styles.codeText}>{item.code}</Text>
-                </View>
-              ) : null}
+              <View style={{ flexDirection: "row", gap: Spacing.one }}>
+                {item.grade ? (
+                  <View style={[styles.codeBadge, { backgroundColor: colors.navyPrimary }]}>
+                    <Text style={[styles.codeText, { color: colors.textLight }]}>{item.grade.toUpperCase()}</Text>
+                  </View>
+                ) : null}
+                {item.code ? (
+                  <View style={styles.codeBadge}>
+                    <Text style={styles.codeText}>{item.code}</Text>
+                  </View>
+                ) : null}
+              </View>
             </View>
             <Text style={styles.courseDesc} numberOfLines={2}>
               {item.description || "No description provided."}
@@ -193,6 +205,32 @@ export default function CoursesList() {
               </View>
 
               <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Target Class / Category *</Text>
+                <View style={styles.gradeSelector}>
+                  {["5th", "6th", "7th", "8th", "9th", "10th", "free", "all"].map((g) => (
+                    <TouchableOpacity
+                      key={g}
+                      style={[
+                        styles.gradeChip,
+                        grade === g ? styles.gradeChipActive : null,
+                      ]}
+                      onPress={() => setGrade(g)}
+                      activeOpacity={0.7}
+                    >
+                      <Text
+                        style={[
+                          styles.gradeChipText,
+                          grade === g ? styles.gradeChipTextActive : null,
+                        ]}
+                      >
+                        {g.toUpperCase()}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              <View style={styles.inputContainer}>
                 <Text style={styles.inputLabel}>Description</Text>
                 <TextInput
                   style={[styles.input, styles.textArea]}
@@ -225,7 +263,7 @@ export default function CoursesList() {
   );
 }
 
-const getStyles = (colors) => StyleSheet.create({
+const getStyles = (colors, insets) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.offWhite,
@@ -240,8 +278,13 @@ const getStyles = (colors) => StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: Spacing.four,
     backgroundColor: colors.navyPrimary,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+    paddingTop: insets.top + Spacing.two,
+    paddingHorizontal: Spacing.four,
+    paddingBottom: Spacing.four,
+    ...colors.cardShadow,
   },
   headerTitle: {
     fontSize: 20,
@@ -406,5 +449,31 @@ const getStyles = (colors) => StyleSheet.create({
     color: colors.textLight,
     fontWeight: "bold",
     fontSize: 16,
+  },
+  gradeSelector: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: Spacing.two,
+    marginTop: Spacing.one,
+  },
+  gradeChip: {
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.one,
+    borderRadius: 20,
+    backgroundColor: colors.offWhite,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  gradeChipActive: {
+    backgroundColor: colors.navyPrimary,
+    borderColor: colors.navyPrimary,
+  },
+  gradeChipText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: colors.textSecondary,
+  },
+  gradeChipTextActive: {
+    color: colors.textLight,
   },
 });

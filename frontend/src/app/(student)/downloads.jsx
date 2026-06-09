@@ -1,25 +1,26 @@
 import React from 'react';
 import { StyleSheet, View, Text, StatusBar, ScrollView } from 'react-native';
 import { Download, Inbox } from 'lucide-react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spacing } from '../../constants/theme';
 import { useAppTheme } from '../../context/ThemeContext';
 
 export default function DownloadsScreen() {
   const { colors } = useAppTheme();
-  const styles = getStyles(colors);
+  const insets = useSafeAreaInsets();
+  const styles = getStyles(colors, insets);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={colors.navyPrimary} />
       
-      {/* Header */}
+      {/* Rounded Header Card */}
       <View style={styles.header}>
         <View style={styles.headerRow}>
           <View style={styles.headerIconContainer}>
             <Download color={colors.textLight} size={24} />
           </View>
-          <View>
+          <View style={styles.headerTextContainer}>
             <Text style={styles.headerTitle}>My Downloads</Text>
             <Text style={styles.headerSubtitle}>Offline study notes and materials</Text>
           </View>
@@ -36,21 +37,23 @@ export default function DownloadsScreen() {
           </Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
-const getStyles = (colors) => StyleSheet.create({
+const getStyles = (colors, insets) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.offWhite,
   },
   header: {
-    paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.three,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.navySecondary,
     backgroundColor: colors.navyPrimary,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+    paddingTop: insets.top + Spacing.two,
+    paddingHorizontal: Spacing.four,
+    paddingBottom: Spacing.four,
+    ...colors.cardShadow,
   },
   headerRow: {
     flexDirection: 'row',
@@ -62,13 +65,16 @@ const getStyles = (colors) => StyleSheet.create({
     borderRadius: Spacing.two,
     marginRight: Spacing.three,
   },
+  headerTextContainer: {
+    flex: 1,
+  },
   headerTitle: {
     color: colors.textLight,
     fontWeight: 'bold',
     fontSize: 20,
   },
   headerSubtitle: {
-    color: 'rgba(255, 255, 255, 0.6)',
+    color: 'rgba(255, 255, 255, 0.75)',
     fontSize: 12,
     marginTop: 2,
   },

@@ -499,14 +499,14 @@ export default function ChapterDetail() {
                   >
                     <Text style={styles.actionLinkText}>👁️ View in Drive</Text>
                   </TouchableOpacity>
-                  {item.downloadUrl && (
+                  {item.downloadUrl ? (
                     <TouchableOpacity
                       style={styles.actionLinkBtn}
                       onPress={() => handleOpenNote(item.downloadUrl)}
                     >
                       <Text style={styles.actionLinkText}>⬇️ Download</Text>
                     </TouchableOpacity>
-                  )}
+                  ) : null}
                 </View>
               </View>
               <View style={styles.cardActions}>

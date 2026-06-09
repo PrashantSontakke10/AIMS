@@ -6,10 +6,6 @@
 import { useAppTheme } from "../context/ThemeContext";
 
 export function useTheme() {
-  try {
-    const { colors } = useAppTheme();
-    return colors;
-  } catch (e) {
-    return {};
-  }
+  const { colors } = useAppTheme();
+  return colors;
 }
